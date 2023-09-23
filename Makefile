@@ -21,4 +21,16 @@ fclean: clean
 
 re: fclean all
 
-.phony: all clean fclean re
+test:
+	stack test
+
+coverage:
+	stack test --coverage
+
+fclean_test: fclean
+	stack purge --test
+
+doc:
+	stack haddock --odir=doc/haddock
+
+.phony: all clean fclean re test coverage fclean_test doc
