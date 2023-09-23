@@ -7,30 +7,32 @@
 
 NAME = glados
 
+STACK = stack --allow-different-user
+
 all: $(NAME)
 
 $(NAME):
-	stack install
+	$(STACK) install
 
 clean:
 	rm -f $(NAME)
-	stack clean
+	$(STACK) clean
 
 fclean: clean
-	stack purge
+	$(STACK) purge
 
 re: fclean all
 
 test_run:
-	stack test
+	$(STACK) test
 
 coverage:
-	stack test --coverage
+	$(STACK) test --coverage
 
 fclean_test: fclean
-	stack purge --test
+	$(STACK) purge --test
 
 doc:
-	stack haddock --odir=doc/haddock
+	$(STACK) haddock --odir=doc/haddock
 
 .phony: all clean fclean re test_run coverage fclean_test doc
