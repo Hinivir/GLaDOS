@@ -21,7 +21,7 @@ fclean: clean
 
 re: fclean all
 
-test:
+test_run:
 	stack test
 
 coverage:
@@ -33,4 +33,4 @@ fclean_test: fclean
 doc:
 	stack haddock --odir=doc/haddock
 
-.phony: all clean fclean re test coverage fclean_test doc
+.phony: all clean fclean re test_run coverage fclean_test doc
