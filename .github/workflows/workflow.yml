@@ -34,7 +34,7 @@ jobs:
     container: hinivir/docker_glados
     steps:
       - name: Launch test
-        run: make test
+        run: make test_run
       - name: Clean
         run: make fclean
 
