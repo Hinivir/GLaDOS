@@ -1,11 +1,43 @@
-name: Mirror
+name: Epitech
 
 on: [ push ]
 
 env:
   URL: "git@github.com:EpitechPromo2026/B-FUN-500-PAR-5-1-glados-damien.benais-captal.git"
+  CHECKER: ".github/script/check_res_cs.sh"
+  CODING_STYLE: ".github/script/check.sh"
+  LAMBDANANAS: ".github/script/lambdananas"
 
 jobs:
+  check_coding_style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: assign execution rights to $CODING_STYLE
+        run: chmod +x ./$CODING_STYLE
+      - name: assign execution rights to $CHECKER
+        run: chmod +x ./$CHECKER
+      - name: assign execution rights to $LAMBDANANAS
+        run: chmod +x ./$LAMBDANANAS
+      - name: run $CODING_STYLE_CHECKER
+        run: ./$CODING_STYLE $(pwd) $(pwd)
+      - name: checking the results
+        run: |
+          chmod +x ./$CHECKER
+          ./$CHECKER  && exit  $? || exit 1
+
+  check_unit_test:
+    name: Check Unit Test
+    runs-on: ubuntu-latest
+    container: hinivir/docker_glados
+    steps:
+      - name: Launch test
+        run: make test
+      - name: Clean
+        run: make fclean
+
   push_to_mirror:
     name: Push to Epitech repository
     runs-on: ubuntu-latest
@@ -22,3 +54,4 @@ jobs:
             ${{ env.URL }}
           ssh_private_key:
             ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+    needs: [ check_coding_style, check_unit_test ]
