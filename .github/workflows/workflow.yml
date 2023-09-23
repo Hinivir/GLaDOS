@@ -33,6 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     container: hinivir/docker_glados
     steps:
+      - uses: actions/checkout@v3
       - name: Launch test
         run: make test_run
       - name: Clean
