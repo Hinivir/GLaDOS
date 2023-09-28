@@ -3,9 +3,9 @@
 The repository for the GLaDOS project.  
   
 <div id="Illustration_Haskell" style="display: flex;">  
-  <img src="assets/Epitech_logo.png" alt="logo Epitech" width="100" height="100" style="margin-right: 30px;">  
-  <img src="assets/Haskell_logo.webp" alt="logo Haskell" width="100" height="100" style="margin-right: 30px;">  
-  <img src="assets/GLaDOS_logo.webp" alt="logo Haskell" width="100" height="100" style="margin-right: 30px;">  
+  <img src="assets/Epitech_logo.png" alt="logo Epitech" width="120" height="120" style="margin-right: 50px;">  
+  <img src="assets/Haskell_logo.webp" alt="logo Haskell" width="120" height="120" style="margin-right: 50px;">  
+  <img src="assets/GLaDOS_logo.webp" alt="logo Haskell" width="120" height="120" style="margin-right: 50px;">  
 </div>  
   
 ---  
@@ -14,6 +14,7 @@ The repository for the GLaDOS project.
 ## Table of contents  
   
 [1. The purpose of the project](#titre1)<br />
+[The subjects of the project 📄](#titre15)<br />
 [2. How to use GLaDOS](#titre2)<br />
 [3. People on the project](#titre3)<br />
   
@@ -25,18 +26,32 @@ The repository for the GLaDOS project.
 The purpose of the project is to implement a programming language that we have created, in [Haskell](https://www.haskell.org/).    
 We have to implement a compiler for this language, and a virtual machine to run the compiled code.  
   
+### <a id="titre15"></a>The subjects of the project 📄
+
+1 [Bootstrap - Abstract Syntax Tree and Evaluation](https://intra.epitech.eu/module/2023/B-FUN-500/PAR-5-1/acti-610932/project/file/B-FUN-500_GLaDOS_bootstrap.pdf)  
+2 [Bootstrap - My parsing library from the ground up](https://intra.epitech.eu/module/2023/B-FUN-500/PAR-5-1/acti-610935/project/file/B-FUN-500_GLaDOS_bootstrap2.pdf)  
+
+3 [GLaDOS - Generic Language and Data Operand Syntax](https://intra.epitech.eu/module/2023/B-FUN-500/PAR-5-1/acti-610933/project/file/B-FUN-500_GLaDOS.pdf)  
+
 ---  
   
 
 ## <a id="titre2"></a>2. How to use GLaDOS  
   
-To compile and launch the project, you need to have the [Haskell Stack installed](https://docs.haskellstack.org/en/stable/install_and_upgrade/) on your computer.  
+To compile and **launch the project**, you need to have the [Haskell Stack installed](https://docs.haskellstack.org/en/stable/install_and_upgrade/) on your computer.  
 And then, run the following commands:  
   
 ```bash  
 make  
 ./glados < [file]  
 ```  
+  
+To check that the program is running correctly, you can use this command to **run tests**:  
+  
+```bash  
+make test_run  
+```  
+  
   
 ---  
   
