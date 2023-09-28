@@ -6,7 +6,13 @@
 -}
 
 
-module TestAst (testSExprToAst, testsEvalAst) where
+module TestAst (
+  testSExprToAst,
+  testEvalAdd,
+  testEvalSub,
+  testEvalMul,
+  testEvalDiv,
+  testsEvalAst,) where
 
 import Ast
 import SExpr
@@ -28,6 +34,39 @@ testSExprToAst =
         ~: sexprToAst (SList [SSym "define", SSym "x", SList [SSym "+", SInt 2, SInt 3]])
         ~?= Just (Define "x" (Call "+" [Value (SInt 2), Value (SInt 3)]))
     ]
+
+testEvalAdd :: Test
+testEvalAdd =
+  TestList
+    [ "evalAdd work"
+      ~: evalAdd (Value (SInt 4)) (Value (SInt 2))
+      ~?= Just (Value (SInt 6))
+    ]
+
+testEvalSub :: Test
+testEvalSub =
+  TestList
+    [ "evalSub work" ~: evalSub (Value (SInt 4)) (Value (SInt 2)) ~?=
+      Just (Value (SInt 2))
+    ]
+
+testEvalMul :: Test
+testEvalMul =
+  TestList
+    [ "evalMul work" ~: evalMul (Value (SInt 4)) (Value (SInt 2)) ~?=
+      Just (Value (SInt 8))
+    ]
+
+testEvalDiv :: Test
+testEvalDiv =
+  TestList
+    [ "evalDiv work" ~: evalDiv (Value (SInt 20)) (Value (SInt 2)) ~?=
+      Just (Value (SInt 10)),
+      "evalDiv division by 0" ~: evalDiv (Value (SInt 5)) (Value (SInt 0))
+      ~?= Nothing
+    ]
+
+
 
 -- | Tests for the 'evalAst' function.
 testsEvalAst :: Test

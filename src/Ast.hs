@@ -14,11 +14,14 @@ module Ast (
   Ast (..),
   -- * Functions
   sexprToAst,
+  evalAdd,
+  evalSub,
+  evalMul,
+  evalDiv,
   evalAst
 ) where
 
 import SExpr (SExpr (..))
-import Data.Maybe (Maybe)
 
 -- | The Ast data type represents an abstract syntax tree.
 data Ast
@@ -63,7 +66,7 @@ evalMul _ _ = Nothing
 
 -- division
 evalDiv :: Ast -> Ast -> Maybe Ast
-evalDiv (Value (SInt x)) (Value (SInt 0)) = Nothing
+evalDiv (Value (SInt _)) (Value (SInt 0)) = Nothing
 evalDiv (Value (SInt x)) (Value (SInt y)) = Just (Value (SInt (x `div` y)))
 evalDiv _ _ = Nothing
 
@@ -83,4 +86,3 @@ evalAst (Call "/" [a, b]) = case (evalAst a, evalAst b) of
   (Just x, Just y) -> evalDiv x y
   _ -> Nothing
 evalAst (Call _ _) = Nothing
-
