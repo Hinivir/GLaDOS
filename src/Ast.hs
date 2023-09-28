@@ -1,3 +1,10 @@
+{-
+-- EPITECH PROJECT, 2023
+-- GLaDOS
+-- File description:
+-- Ast
+-}
+
 {-|
 Module      : Ast
 Description : Defines the Ast data type and provides functions to convert SExpr to Ast and evaluate Ast.
@@ -44,17 +51,25 @@ sexprToAst _ = Nothing
 evalAst :: Ast -> Maybe Ast
 evalAst (Value v) = Just (Value v)
 evalAst (Define _ _) = Nothing -- cannot evaluate a definition
-evalAst (Call "+" [a, b]) = case (evalAst a, evalAst b) of
-  (Just (Value (SInt x)), Just (Value (SInt y))) -> Just (Value (SInt (x + y)))
-  _ -> Nothing
-evalAst (Call "-" [a, b]) = case (evalAst a, evalAst b) of
-  (Just (Value (SInt x)), Just (Value (SInt y))) -> Just (Value (SInt (x - y)))
-  _ -> Nothing
-evalAst (Call "*" [a, b]) = case (evalAst a, evalAst b) of
-  (Just (Value (SInt x)), Just (Value (SInt y))) -> Just (Value (SInt (x * y)))
-  _ -> Nothing
-evalAst (Call "/" [a, b]) = case (evalAst a, evalAst b) of
-  (Just (Value (SInt x)), Just (Value (SInt 0))) -> Nothing -- division by zero
-  (Just (Value (SInt x)), Just (Value (SInt y))) -> Just (Value (SInt (x `div` y)))
-  _ -> Nothing
+evalAst (Call "+" [a, b]) =
+  case (evalAst a, evalAst b) of
+    (Just (Value (SInt x)), Just (Value (SInt y))) ->
+      Just (Value (SInt (x + y)))
+    _ -> Nothing
+evalAst (Call "-" [a, b]) =
+  case (evalAst a, evalAst b) of
+    (Just (Value (SInt x)), Just (Value (SInt y))) ->
+      Just (Value (SInt (x - y)))
+    _ -> Nothing
+evalAst (Call "*" [a, b]) =
+  case (evalAst a, evalAst b) of
+    (Just (Value (SInt x)), Just (Value (SInt y))) ->
+      Just (Value (SInt (x * y)))
+    _ -> Nothing
+evalAst (Call "/" [a, b]) =
+  case (evalAst a, evalAst b) of
+    (Just (Value (SInt x)), Just (Value (SInt 0))) -> Nothing -- division by zero
+    (Just (Value (SInt x)), Just (Value (SInt y))) ->
+      Just (Value (SInt (x `div` y)))
+    _ -> Nothing
 evalAst (Call _ _) = Nothing -- cannot evaluate other function calls

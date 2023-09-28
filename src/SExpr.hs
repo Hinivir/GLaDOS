@@ -1,3 +1,10 @@
+{-
+-- EPITECH PROJECT, 2023
+-- GLaDOS
+-- File description:
+-- SExpr
+-}
+
 {-|
 Module      : SExpr
 Description : Defines the SExpr data type and provides functions to work with S-Expressions.
