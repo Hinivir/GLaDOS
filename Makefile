@@ -7,7 +7,7 @@
 
 NAME = glados
 
-STACK = stack --allow-different-user
+STACK = stack
 
 all: $(NAME)
 
