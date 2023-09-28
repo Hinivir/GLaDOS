@@ -18,6 +18,7 @@ module Ast (
 ) where
 
 import SExpr (SExpr (..))
+import Data.Maybe (Maybe)
 
 -- | The Ast data type represents an abstract syntax tree.
 data Ast
@@ -45,31 +46,41 @@ sexprToAst (SInt n) = Just (Value (SInt n))
 sexprToAst (SSym s) = Just (Value (SSym s))
 sexprToAst _ = Nothing
 
--- | Evaluates an Ast and returns the result.
---
--- Returns 'Nothing' if the Ast cannot be evaluated.
+-- addition
+evalAdd :: Ast -> Ast -> Maybe Ast
+evalAdd (Value (SInt x)) (Value (SInt y)) = Just (Value (SInt (x + y)))
+evalAdd _ _ = Nothing
+
+-- soustraction
+evalSub :: Ast -> Ast -> Maybe Ast
+evalSub (Value (SInt x)) (Value (SInt y)) = Just (Value (SInt (x - y)))
+evalSub _ _ = Nothing
+
+-- multiplication
+evalMul :: Ast -> Ast -> Maybe Ast
+evalMul (Value (SInt x)) (Value (SInt y)) = Just (Value (SInt (x * y)))
+evalMul _ _ = Nothing
+
+-- division
+evalDiv :: Ast -> Ast -> Maybe Ast
+evalDiv (Value (SInt x)) (Value (SInt 0)) = Nothing
+evalDiv (Value (SInt x)) (Value (SInt y)) = Just (Value (SInt (x `div` y)))
+evalDiv _ _ = Nothing
+
 evalAst :: Ast -> Maybe Ast
 evalAst (Value v) = Just (Value v)
-evalAst (Define _ _) = Nothing -- cannot evaluate a definition
-evalAst (Call "+" [a, b]) =
-  case (evalAst a, evalAst b) of
-    (Just (Value (SInt x)), Just (Value (SInt y))) ->
-      Just (Value (SInt (x + y)))
-    _ -> Nothing
-evalAst (Call "-" [a, b]) =
-  case (evalAst a, evalAst b) of
-    (Just (Value (SInt x)), Just (Value (SInt y))) ->
-      Just (Value (SInt (x - y)))
-    _ -> Nothing
-evalAst (Call "*" [a, b]) =
-  case (evalAst a, evalAst b) of
-    (Just (Value (SInt x)), Just (Value (SInt y))) ->
-      Just (Value (SInt (x * y)))
-    _ -> Nothing
-evalAst (Call "/" [a, b]) =
-  case (evalAst a, evalAst b) of
-    (Just (Value (SInt x)), Just (Value (SInt 0))) -> Nothing -- division by zero
-    (Just (Value (SInt x)), Just (Value (SInt y))) ->
-      Just (Value (SInt (x `div` y)))
-    _ -> Nothing
-evalAst (Call _ _) = Nothing -- cannot evaluate other function calls
+evalAst (Define _ _) = Nothing -- impossible d'évaluer une définition
+evalAst (Call "+" [a, b]) = case (evalAst a, evalAst b) of
+  (Just x, Just y) -> evalAdd x y
+  _ -> Nothing
+evalAst (Call "-" [a, b]) = case (evalAst a, evalAst b) of
+  (Just x, Just y) -> evalSub x y
+  _ -> Nothing
+evalAst (Call "*" [a, b]) = case (evalAst a, evalAst b) of
+  (Just x, Just y) -> evalMul x y
+  _ -> Nothing
+evalAst (Call "/" [a, b]) = case (evalAst a, evalAst b) of
+  (Just x, Just y) -> evalDiv x y
+  _ -> Nothing
+evalAst (Call _ _) = Nothing
+
