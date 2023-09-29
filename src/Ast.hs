@@ -104,7 +104,7 @@ evalAst (Call "<" [a, b]) = case (evalAst a, evalAst b) of
 evalAst (Call "eq?" [a, b]) = case (evalAst a, evalAst b) of
   (Just (Value (SInt x)), Just (Value (SInt y))) -> Just (Value (SBool (x == y)))
   _ -> Nothing
-evalAst (If condExpr trueExpr falseExpr) = case (evalAst condExpr, evalAst trueExpr, evalAst falseExpr) of
+evalAst (Call "if" [condExpr, trueExpr, falseExpr]) = case (evalAst condExpr, evalAst trueExpr, evalAst falseExpr) of
   (Just (Value (SBool condition)), x, y) -> if condition then x else y
   _ -> Nothing
 evalAst (Call _ _) = Nothing
