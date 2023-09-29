@@ -29,6 +29,8 @@ data SExpr
     SInt Integer
   | -- | A list of S-Expressions.
     SList [SExpr]
+  | -- | A Boolean
+    SBool Bool
   deriving (Show, Eq)
 
 -- | Returns the symbol value of an S-Expression if it is a symbol.
