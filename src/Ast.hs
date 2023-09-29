@@ -18,6 +18,7 @@ module Ast (
   evalSub,
   evalMul,
   evalDiv,
+  evalMod,
   evalAst
 ) where
 
@@ -31,8 +32,6 @@ data Ast
     Call String [Ast]
   | -- | A value represented by an SExpr.
     Value SExpr
-  |
-    If Ast Ast Ast
   deriving (Show, Eq)
 
 -- | Converts an SExpr to an Ast.
@@ -77,7 +76,7 @@ evalMod (Value (SInt _)) (Value (SInt 0)) = Nothing
 evalMod (Value (SInt x)) (Value (SInt y)) = Just (Value (SInt (x `mod` y)))
 evalMod _ _ = Nothing
 
-evalAst :: Ast -> Maybe Ast
+{- evalAst :: Ast -> Maybe Ast
 evalAst (Value v) = Just (Value v)
 evalAst (Define _ _) = Nothing -- impossible d'évaluer une définition
 evalAst (Call "+" [a, b]) = case (evalAst a, evalAst b) of
@@ -105,8 +104,46 @@ evalAst (Call "eq?" [a, b]) = case (evalAst a, evalAst b) of
   (Just (Value (SInt x)), Just (Value (SInt y))) -> Just (Value (SBool (x == y)))
   _ -> Nothing
 evalAst (Call "if" [condExpr, trueExpr, falseExpr]) = case (evalAst condExpr, evalAst trueExpr, evalAst falseExpr) of
-  (Just (Value (SBool condition)), x, y) -> if condition then x else y
+  (Just (Value (SBool condition)), Just x, Just y) -> if condition then Just x else Just y
   _ -> Nothing
 evalAst (Call _ _) = Nothing
+ -}
 
+evalAst :: Ast -> Maybe Ast
+evalAst (Value v) = Just (Value v)
+evalAst (Define _ _) = Nothing
+evalAst (Call "+" [a, b]) = evalBinOp evalAdd a b
+evalAst (Call "-" [a, b]) = evalBinOp evalSub a b
+evalAst (Call "*" [a, b]) = evalBinOp evalMul a b
+evalAst (Call "div" [a, b]) = evalBinOp evalDiv a b
+evalAst (Call "mod" [a, b]) = evalBinOp evalMod a b
+evalAst (Call ">" [a, b]) = case (evalAst a, evalAst b) of
+    (Just (Value (SInt x)), Just (Value (SInt y))) ->
+      Just (Value (SBool (x > y)))
+    _ -> Nothing
+evalAst (Call "<" [a, b]) = case (evalAst a, evalAst b) of
+    (Just (Value (SInt x)), Just (Value (SInt y))) ->
+      Just (Value (SBool (x < y)))
+    _ -> Nothing
+evalAst (Call "eq?" [a, b]) = case (evalAst a, evalAst b) of
+    (Just (Value (SInt x)), Just (Value (SInt y))) ->
+      Just (Value (SBool (x == y)))
+    _ -> Nothing
+evalAst (Call "if" [condExpr, trueExpr, falseExpr]) =
+  evalIf condExpr trueExpr falseExpr
+evalAst (Call _ _) = Nothing
 
+evalBinOp :: (Ast -> Ast -> Maybe Ast) -> Ast -> Ast -> Maybe Ast
+evalBinOp op a b =
+  case (evalAst a, evalAst b) of
+    (Just x, Just y) -> op x y
+    _                -> Nothing
+
+evalIf :: Ast -> Ast -> Ast -> Maybe Ast
+evalIf condExpr trueExpr falseExpr =
+  case (evalAst condExpr, evalAst trueExpr, evalAst falseExpr) of
+    (Just (Value (SBool condition)), Just x, Just y) ->
+      if condition
+        then Just x
+        else Just y
+    _ -> Nothing
