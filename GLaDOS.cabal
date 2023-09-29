@@ -26,8 +26,8 @@ library
   exposed-modules:
       Ast
       Lib
-      SExpr
       Parser
+      SExpr
   other-modules:
       Paths_GLaDOS
   hs-source-dirs:
@@ -54,9 +54,9 @@ test-suite glados-test
   main-is: Spec.hs
   other-modules:
       TestAst
+      TestParser
       TestSExpr
       Paths_GLaDOS
-      TestParser
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N

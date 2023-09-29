@@ -33,7 +33,12 @@ module Parser
   , parseList
   ) where
 
+import System.IO
+import System.Exit
+import System.Environment
+
 import Data.Char (isDigit)
+
 
 --type Parser a = String -> Maybe (a, String)
 

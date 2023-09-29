@@ -58,6 +58,7 @@ getList _ = Nothing
 printTree :: SExpr -> String
 printTree (SSym x) = "a Symbol '" ++ x ++ "'"
 printTree (SInt x) = "a Number " ++ show x
+printTree (SBool x) = "a Bool " ++ show x
 printTree (SList x) = "a List with (" ++ printNestedList x
 
 -- | Returns a string representation of a nested list of S-Expressions.
