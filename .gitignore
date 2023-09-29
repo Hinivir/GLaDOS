@@ -1,7 +1,14 @@
-.stack-work/
+# By document type
 *~
 *.txt
 
+
+# Specific folder to ignore
+.stack-work/
+.vscode
+
+
+# Other file or folder to ignore
+glados
 private*
 stack.yaml.lock
-.vscode

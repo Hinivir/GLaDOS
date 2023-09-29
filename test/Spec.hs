@@ -1,3 +1,10 @@
+{-
+-- EPITECH PROJECT, 2023
+-- GLaDOS
+-- File description:
+-- Spec
+-}
+
 import Test.HUnit
 import TestSExpr (printTreeTests, testSExpr)
 import TestAst (
