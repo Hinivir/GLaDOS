@@ -1,5 +1,12 @@
 #!/bin/bash
 
+##
+## EPITECH PROJECT, 2023
+## GLaDOS
+## File description:
+## check_res_cs
+##
+
 sed -i '/test/d' coding-style-reports.log
 
 CONTENT="$(cat coding-style-reports.log)"

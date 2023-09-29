@@ -1,6 +1,6 @@
 {-
 -- EPITECH PROJECT, 2023
--- GLaDOS-mirror
+-- GLaDOS
 -- File description:
 -- Main
 -}

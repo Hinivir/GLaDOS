@@ -1,5 +1,12 @@
 #!/bin/bash
 
+##
+## EPITECH PROJECT, 2023
+## GLaDOS
+## File description:
+## check
+##
+
 function my_readlink() {
     cd $1
     pwd
