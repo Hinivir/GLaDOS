@@ -71,43 +71,11 @@ evalDiv (Value (SInt _)) (Value (SInt 0)) = Nothing
 evalDiv (Value (SInt x)) (Value (SInt y)) = Just (Value (SInt (x `div` y)))
 evalDiv _ _ = Nothing
 
+-- modulo
 evalMod :: Ast -> Ast -> Maybe Ast
 evalMod (Value (SInt _)) (Value (SInt 0)) = Nothing
 evalMod (Value (SInt x)) (Value (SInt y)) = Just (Value (SInt (x `mod` y)))
 evalMod _ _ = Nothing
-
-{- evalAst :: Ast -> Maybe Ast
-evalAst (Value v) = Just (Value v)
-evalAst (Define _ _) = Nothing -- impossible d'évaluer une définition
-evalAst (Call "+" [a, b]) = case (evalAst a, evalAst b) of
-  (Just x, Just y) -> evalAdd x y
-  _ -> Nothing
-evalAst (Call "-" [a, b]) = case (evalAst a, evalAst b) of
-  (Just x, Just y) -> evalSub x y
-  _ -> Nothing
-evalAst (Call "*" [a, b]) = case (evalAst a, evalAst b) of
-  (Just x, Just y) -> evalMul x y
-  _ -> Nothing
-evalAst (Call "div" [a, b]) = case (evalAst a, evalAst b) of
-  (Just x, Just y) -> evalDiv x y
-  _ -> Nothing
-evalAst (Call "mod" [a, b]) = case (evalAst a, evalAst b) of
-  (Just x, Just y) -> evalMod x y
-  _ -> Nothing
-evalAst (Call ">" [a, b]) = case (evalAst a, evalAst b) of
-  (Just (Value (SInt x)), Just (Value (SInt y))) -> Just (Value (SBool (x > y)))
-  _ -> Nothing
-evalAst (Call "<" [a, b]) = case (evalAst a, evalAst b) of
-  (Just (Value (SInt x)), Just (Value (SInt y))) -> Just (Value (SBool (x < y)))
-  _ -> Nothing
-evalAst (Call "eq?" [a, b]) = case (evalAst a, evalAst b) of
-  (Just (Value (SInt x)), Just (Value (SInt y))) -> Just (Value (SBool (x == y)))
-  _ -> Nothing
-evalAst (Call "if" [condExpr, trueExpr, falseExpr]) = case (evalAst condExpr, evalAst trueExpr, evalAst falseExpr) of
-  (Just (Value (SBool condition)), Just x, Just y) -> if condition then Just x else Just y
-  _ -> Nothing
-evalAst (Call _ _) = Nothing
- -}
 
 evalAst :: Ast -> Maybe Ast
 evalAst (Value v) = Just (Value v)
