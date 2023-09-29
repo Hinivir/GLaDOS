@@ -7,7 +7,6 @@
 
 module Main (main) where
 
-import Lib
 import System.IO
 import System.Exit
 
