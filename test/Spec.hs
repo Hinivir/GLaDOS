@@ -6,6 +6,7 @@ import TestAst (
   testEvalSub,
   testEvalMul,
   testEvalDiv,
+  testEvalMod,
   testsEvalAst
   )
 
@@ -25,6 +26,8 @@ main = do
   _ <- runTestTT testEvalMul
   putStrLn "Run test for EvalDiv"
   _ <- runTestTT testEvalDiv
+  putStrLn "Run test for EvalMod"
+  _ <- runTestTT testEvalMod
   putStrLn "Run test for EvalAst"
   _ <- runTestTT testsEvalAst
   return ()
