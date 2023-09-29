@@ -8,6 +8,19 @@ import TestAst (
   testEvalDiv,
   testsEvalAst
   )
+import TestParser (
+  testParseChar,
+  testParseAnyChar,
+  testParseOr,
+  testParseAnd,
+  testParseAndWith,
+  testParseMany,
+  testParseSome,
+  testParseUInt,
+  testParseInt,
+  testParsePair,
+  testParseList
+  )
 
 main :: IO ()
 main = do
@@ -27,4 +40,27 @@ main = do
   _ <- runTestTT testEvalDiv
   putStrLn "Run test for EvalAst"
   _ <- runTestTT testsEvalAst
+  -- testParse
+  putStrLn "Run test for parseChar"
+  _ <- runTestTT testParseChar
+  putStrLn "Run test for parseAnyChar"
+  _ <- runTestTT testParseAnyChar
+  putStrLn "Run test for parseOr"
+  _ <- runTestTT testParseOr
+  putStrLn "Run test for parseAnd"
+  _ <- runTestTT testParseAnd
+  putStrLn "Run test for parseAndWith"
+  _ <- runTestTT testParseAndWith
+  putStrLn "Run test for parseMany"
+  _ <- runTestTT testParseMany
+  putStrLn "Run test for parseSome"
+  _ <- runTestTT testParseSome
+  putStrLn "Run test for parseUInt"
+  _ <- runTestTT testParseUInt
+  putStrLn "Run test for parseInt"
+  _ <- runTestTT testParseInt
+  putStrLn "Run test for parsePair"
+  _ <- runTestTT testParsePair
+  putStrLn "Run test for parseList"
+  _ <- runTestTT testParseList
   return ()

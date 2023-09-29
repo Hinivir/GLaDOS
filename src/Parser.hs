@@ -134,18 +134,8 @@ parseUInt =
       ("", _)             -> Nothing -- No digits found, parsing failed.
       (digits, remaining) -> Just (read digits, remaining)
 
-parseInt :: Parser Int
-parseInt =
-  Parser $ \input ->
-    case runParser parseNegativeInt input of
-      Just (result, remaining) -> Just (result, remaining)
-      Nothing ->
-        case runParser parsePositiveInt input of
-          Just (result, remaining) -> Just (result, remaining)
-          Nothing                  -> Nothing
-  where
-    parsePositiveInt = parseUInt
-    parseNegativeInt =
+parseIntCheckNegative :: Parser Int
+parseIntCheckNegative =
       Parser $ \input ->
         case input of
           ('-':rest) ->
@@ -154,11 +144,20 @@ parseInt =
               Nothing                    -> Nothing
           _ -> Nothing
 
+parseInt :: Parser Int
+parseInt =
+  Parser $ \input ->
+    case runParser parseNegativeInt input of
+      Nothing -> runParser parseUInt input
+      result -> result
+  where
+    parseNegativeInt = parseIntCheckNegative
+
 -- Parse a pair of integers enclosed in parentheses
 parsePair :: Parser a -> Parser b -> Parser (a, b)
 parsePair parser1 parser2 =
   Parser $ \input -> do
-    (x, input1) <- runParser (parseChar '(') input
+    (_, input1) <- runParser (parseChar '(') input
     (y, input2) <- runParser parser1 input1
     (_, input3) <- runParser (parseChar ',') input2
     (z, input4) <- runParser parser2 input3
