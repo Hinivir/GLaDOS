@@ -27,8 +27,8 @@ library
       Ast
       Lib
       Parser
-      SExpr
       ParserToSExpr
+      SExpr
   other-modules:
       Paths_GLaDOS
   hs-source-dirs:

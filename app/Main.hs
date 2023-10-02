@@ -27,8 +27,8 @@ mainCheckEOF True = errorExit "No input"
 mainCheckEOF False = do
                 line <- getLine
                 putStrLn line
-                isEOF' <- isEOF
-                mainCheckEOF isEOF'
+--                isEOF' <- isEOF
+--                mainCheckEOF isEOF'
 
 
 -- function main
