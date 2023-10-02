@@ -27,6 +27,7 @@ library
       Ast
       Lib
       Parser
+      ParserToSExpr
       SExpr
   other-modules:
       Paths_GLaDOS
