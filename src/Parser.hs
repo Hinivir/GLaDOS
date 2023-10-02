@@ -68,16 +68,6 @@ parseChar c =
         | x == c -> Just (c, xs)
       _ -> Nothing
 
-
--- | Parse a list of char in a string
---
--- Returns 'Nothing' if ther is not the char in the string.
--- Returns 'Just' the char and the rest of the string.
---parseAnyChar (x:xs) (y:ys)
---parseAnyChar :: String -> Parser Char
---  | x == y = Just (y, ys)
---  | otherwise = parseAnyChar xs (y:ys)
---parseAnyChar _ _ = Nothing
 parseOr :: Parser a -> Parser a -> Parser a
 parseOr p1 p2 =
   Parser $ \input ->
@@ -85,8 +75,10 @@ parseOr p1 p2 =
       Just (result, remaining) -> Just (result, remaining)
       Nothing -> runParser p2 input
 
-
-
+-- | Parse a list of char in a string
+--
+-- Returns 'Nothing' if ther is not the char in the string.
+-- Returns 'Just' the char and the rest of the string.
 parseAnyChar :: String -> Parser Char
 parseAnyChar (x:xs) = parseOr (parseChar x) (parseAnyChar xs)
 parseAnyChar []     = Parser $ const Nothing
