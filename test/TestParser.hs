@@ -138,17 +138,17 @@ testParseInt = TestList
     ]
 
 testParsePair :: Test
-testParsePair = TestList []
---testParsePair =
---  TestList
---    [ "parsePair Subject test 1" ~: runParser parsePair "(123 456)foo bar" ~?=
---      Just ((123, 456), "foo bar")
---    ]
+--testParsePair = TestList []
+testParsePair =
+  TestList
+    [ "parsePair Subject test 1" ~: runParser parsePair (Just (123, " baz")) ~?=
+      Just ((123, 456), "foo bar")
+    ]
 
 testParseList :: Test
 testParseList = TestList []
 --testParseList =
 --  TestList
---    [ "parseList Subject test 1" ~: runParser parseList "(1 2 3 4 5 7 11 13 17)" ~?=
+--    [ "parseList Subject test 1" ~: runParser parseList parseInt "(1 2 3 4 5 7 11 13 17)" ~?=
 --      Just ([1, 2, 3, 4, 5, 7, 11, 13, 17], "")
 --    ]

@@ -31,6 +31,7 @@ module Parser
   , parseInt
   , parsePair
   , parseList
+--  , stringToParser
   ) where
 
 import Data.Char (isDigit)
@@ -154,15 +155,16 @@ parseInt =
     parseNegativeInt = parseIntCheckNegative
 
 -- Parse a pair of integers enclosed in parentheses
-parsePair :: Parser a -> Parser b -> Parser (a, b)
-parsePair parser1 parser2 =
-  Parser $ \input -> do
-    (_, input1) <- runParser (parseChar '(') input
-    (y, input2) <- runParser parser1 input1
-    (_, input3) <- runParser (parseChar ',') input2
-    (z, input4) <- runParser parser2 input3
-    (_, input5) <- runParser (parseChar ')') input4
-    return ((y, z), input5)
+parsePair :: Parser a -> Parser (a, a)
+--parsePair parser1 parser2 =
+--  Parser $ \input -> do
+--    (_, input1) <- runParser (parseChar '(') input
+--    (y, input2) <- runParser parser1 input1
+--    (_, input3) <- runParser (parseChar ',') input2
+--    (z, input4) <- runParser parser2 input3
+--    (_, input5) <- runParser (parseChar ')') input4
+--    return ((y, z), input5)
+parsePair _ = Parser $ const Nothing
 
 
 
@@ -172,3 +174,7 @@ parseList parser =
     case runParser (parseMany parser) input of
       Just (results, remaining) -> Just (results, remaining)
       Nothing                   -> Nothing
+
+--stringToParser :: String -> Parser Char
+--stringToParser _ = Nothing
+--stringToParser
