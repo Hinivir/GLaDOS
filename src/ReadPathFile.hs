@@ -5,6 +5,8 @@
 -- ReadPathFile.hs
 -}
 
+module ReadPathFile where
+
 import System.IO
 
 -- function fileToList

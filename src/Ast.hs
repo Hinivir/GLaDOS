@@ -85,18 +85,21 @@ evalAst (Call "-" [a, b]) = evalBinOp evalSub a b
 evalAst (Call "*" [a, b]) = evalBinOp evalMul a b
 evalAst (Call "div" [a, b]) = evalBinOp evalDiv a b
 evalAst (Call "mod" [a, b]) = evalBinOp evalMod a b
-evalAst (Call ">" [a, b]) = case (evalAst a, evalAst b) of
-    (Just (Value (SInt x)), Just (Value (SInt y))) ->
-      Just (Value (SBool (x > y)))
-    _ -> Nothing
-evalAst (Call "<" [a, b]) = case (evalAst a, evalAst b) of
-    (Just (Value (SInt x)), Just (Value (SInt y))) ->
-      Just (Value (SBool (x < y)))
-    _ -> Nothing
-evalAst (Call "eq?" [a, b]) = case (evalAst a, evalAst b) of
-    (Just (Value (SInt x)), Just (Value (SInt y))) ->
-      Just (Value (SBool (x == y)))
-    _ -> Nothing
+evalAst (Call ">" [a, b])
+  | Just (Value (SInt x)) <- evalAst a
+  , Just (Value (SInt y)) <- evalAst b =
+    Just (Value (SBool (x > y)))
+  | otherwise = Nothing
+evalAst  (Call "<" [a, b])
+  | Just (Value (SInt x)) <- evalAst a
+  , Just (Value (SInt y)) <- evalAst b =
+    Just (Value (SBool (x < y)))
+  | otherwise = Nothing
+evalAst (Call "eq?" [a, b])
+  | Just (Value (SInt x)) <- evalAst a
+  , Just (Value (SInt y)) <- evalAst b =
+    Just (Value (SBool (x == y)))
+  | otherwise = Nothing
 evalAst (Call "if" [condExpr, trueExpr, falseExpr]) =
   evalIf condExpr trueExpr falseExpr
 evalAst (Call _ _) = Nothing

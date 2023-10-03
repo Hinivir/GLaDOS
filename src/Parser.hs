@@ -166,7 +166,7 @@ parsePair parser =
 --    return ([], Nothing)
 
 parseList :: Parser a -> Parser [a]
-parseList parser =
+parseList _ =
   Parser $ \input1 -> do
     (_, input2) <- runParser (parseChar '(') input1
 --    (list, input3) <- runParser parseListSegment input2
