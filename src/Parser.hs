@@ -164,8 +164,8 @@ parseListSegment parser list =
   Parser $ \input1 -> do
     (element, input2) <- runParser parser input1
     case runParser (parseChar ' ') input2 of
-      Just (_, b)  -> runParser (runParseListSegment (list ++ [element])) b
-      Nothing           -> Just ((list ++ [element]), input2)
+      Just (_, b) -> runParser (runParseListSegment (list ++ [element])) b
+      Nothing     -> Just ((list ++ [element]), input2)
     where
       runParseListSegment = parseListSegment parser
 
