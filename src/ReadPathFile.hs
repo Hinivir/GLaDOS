@@ -5,9 +5,13 @@
 -- ReadPathFile.hs
 -}
 
-module ReadPathFile where
+module ReadPathFile(
+    fileToList,
+    loopFileToList
+) where
 
 import System.IO
+    ( hClose, hIsEOF, hGetLine, openFile, Handle, IOMode(ReadMode) )
 
 -- function fileToList
 -- Take the file path
