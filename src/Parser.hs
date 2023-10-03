@@ -159,23 +159,24 @@ parsePair parser =
 --parsePair _ = Parser $ const Nothing
 
 
---parseListSegment :: Parser a -> Parser [a]
---parseListSegment parser =
---  Parser $ \input1 -> do
---    (value, input2) <- runParser parseListSegment input1
---    return ([], Nothing)
+parseListSegment :: Parser a -> [a] -> Parser [a]
+parseListSegment parser list =
+  Parser $ \input1 -> do
+    (element, input2) <- runParser parser input1
+    case runParser (parseChar ' ') input2 of
+      Just (_, b)  -> runParser (runParseListSegment (list ++ [element])) b
+      Nothing           -> Just ((list ++ [element]), input2)
+    where
+      runParseListSegment = parseListSegment parser
 
 parseList :: Parser a -> Parser [a]
-parseList _ =
+parseList parser =
   Parser $ \input1 -> do
     (_, input2) <- runParser (parseChar '(') input1
---    (list, input3) <- runParser parseListSegment input2
-    (_, input4) <- runParser (parseChar ')') input2
-    return ([], input4)
---  Parser $ \input ->
---    case runParser (parseMany parser) input of
---      Just (results, remaining) -> Just (results, remaining)
---      Nothing                   -> Nothing
+    (list, input3) <- runParser (parseListSegment parser []) input2
+    case runParser (parseChar ')') input3 of
+      Just (_, input4)  -> Just (list, input4)
+      Nothing           -> Nothing
 
 --stringToParser :: String -> Parser Char
 --stringToParser _ = Nothing
