@@ -38,14 +38,12 @@ data Ast
 --
 -- Returns 'Nothing' if the SExpr cannot be converted to an Ast.
 sexprToAst :: SExpr -> Maybe Ast
-sexprToAst (SList [SSym "define", SSym var, expr]) =
-  case sexprToAst expr of
-    Just astExpr -> Just (Define var astExpr)
-    Nothing -> Nothing
-sexprToAst (SList (SSym func : args)) =
-  case mapM sexprToAst args of
-    Just astArgs -> Just (Call func astArgs)
-    Nothing -> Nothing
+sexprToAst (SList [SSym "define", SSym var, expr])
+  | Just astExpr <- sexprToAst expr = Just (Define var astExpr)
+  | otherwise = Nothing
+sexprToAst (SList (SSym func : args))
+  | Just astArgs <- mapM sexprToAst args = Just (Call func astArgs)
+  | otherwise = Nothing
 sexprToAst (SInt n) = Just (Value (SInt n))
 sexprToAst (SSym s) = Just (Value (SSym s))
 sexprToAst _ = Nothing
@@ -105,10 +103,9 @@ evalAst (Call "if" [condExpr, trueExpr, falseExpr]) =
 evalAst (Call _ _) = Nothing
 
 evalBinOp :: (Ast -> Ast -> Maybe Ast) -> Ast -> Ast -> Maybe Ast
-evalBinOp op a b =
-  case (evalAst a, evalAst b) of
-    (Just x, Just y) -> op x y
-    _                -> Nothing
+evalBinOp op a b
+  | Just x <- evalAst a, Just y <- evalAst b = op x y
+  | otherwise = Nothing
 
 evalIf :: Ast -> Ast -> Ast -> Maybe Ast
 evalIf condExpr trueExpr falseExpr =
