@@ -13,3 +13,8 @@ glados
 private*
 stack.yaml.lock
 lambdananas
+
+
+# useless file haskell
+*.hi
+*.o
