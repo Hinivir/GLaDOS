@@ -148,24 +148,34 @@ parseInt =
 
 -- Parse a pair of integers enclosed in parentheses
 parsePair :: Parser a -> Parser (a, a)
---parsePair parser1 parser2 =
---  Parser $ \input -> do
---    (_, input1) <- runParser (parseChar '(') input
---    (y, input2) <- runParser parser1 input1
---    (_, input3) <- runParser (parseChar ',') input2
---    (z, input4) <- runParser parser2 input3
---    (_, input5) <- runParser (parseChar ')') input4
---    return ((y, z), input5)
-parsePair _ = Parser $ const Nothing
+parsePair parser =
+  Parser $ \input1 -> do
+    (_, input2) <- runParser (parseChar '(') input1
+    (y, input3) <- runParser parser input2
+    (_, input4) <- runParser (parseChar ' ') input3
+    (z, input5) <- runParser parser input4
+    (_, input6) <- runParser (parseChar ')') input5
+    return ((y, z), input6)
+--parsePair _ = Parser $ const Nothing
 
 
+--parseListSegment :: Parser a -> Parser [a]
+--parseListSegment parser =
+--  Parser $ \input1 -> do
+--    (value, input2) <- runParser parseListSegment input1
+--    return ([], Nothing)
 
 parseList :: Parser a -> Parser [a]
 parseList parser =
-  Parser $ \input ->
-    case runParser (parseMany parser) input of
-      Just (results, remaining) -> Just (results, remaining)
-      Nothing                   -> Nothing
+  Parser $ \input1 -> do
+    (_, input2) <- runParser (parseChar '(') input1
+--    (list, input3) <- runParser parseListSegment input2
+    (_, input4) <- runParser (parseChar ')') input2
+    return ([], input4)
+--  Parser $ \input ->
+--    case runParser (parseMany parser) input of
+--      Just (results, remaining) -> Just (results, remaining)
+--      Nothing                   -> Nothing
 
 --stringToParser :: String -> Parser Char
 --stringToParser _ = Nothing
