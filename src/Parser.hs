@@ -18,6 +18,7 @@ Le type `BetterParser` est similaire à `Parser`, mais renvoie également une ch
 -}
 module Parser
   ( Parser
+  , ParserAny (ParserChar, ParserInt, ParserString)
   , runParser
   , BetterParser
   , parseChar
@@ -31,7 +32,7 @@ module Parser
   , parseInt
   , parsePair
   , parseList
---  , stringToParser
+  , stringToParser
   ) where
 
 import Data.Char (isDigit)
@@ -55,6 +56,9 @@ data Parser a =
   Parser
     { runParser :: String -> Maybe (a, String)
     }
+
+data ParserAny = ParserChar Char | ParserInt Int | ParserString String
+  deriving (Eq, Show)
 
 -- | Parse a char in a string
 --
@@ -156,7 +160,6 @@ parsePair parser =
     (z, input5) <- runParser parser input4
     (_, input6) <- runParser (parseChar ')') input5
     return ((y, z), input6)
---parsePair _ = Parser $ const Nothing
 
 parseListSegment :: Parser a -> [a] -> Parser [a]
 parseListSegment parser list =
@@ -177,6 +180,47 @@ parseList parser =
       Just (_, input4)  -> Just (list, input4)
       Nothing           -> Nothing
 
---stringToParser :: String -> Parser Char
---stringToParser _ = Nothing
---stringToParser
+-- STRING TO PARSER --
+
+stringToParserAdd :: ParserAny -> String -> Maybe [ParserAny]
+stringToParserAdd element string = case stringToParser string of
+  Just list -> Just (element:list)
+  Nothing   -> Nothing
+
+stringToParserIsEmpty :: Char -> Bool
+stringToParserIsEmpty ' ' = True
+stringToParserIsEmpty '\n' = True
+stringToParserIsEmpty _ = False
+
+stringToParserIsUnique :: Char -> Bool
+stringToParserIsUnique '(' = True
+stringToParserIsUnique ')' = True
+stringToParserIsUnique _ = False
+
+stringListOperators :: [Char]
+stringListOperators = ['+', '-', '*', '/', '%', '>', '<', '=']
+
+stringList :: [Char]
+stringList = ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ stringListOperators
+
+stringToParserCaseUnique :: String -> Maybe [ParserAny]
+stringToParserCaseUnique []    = Nothing
+stringToParserCaseUnique (h:t) = case runParser (parseChar h) (h:t) of
+  Just (char, inp)  -> stringToParserAdd (ParserChar char) inp
+  Nothing           -> Nothing
+
+stringToParserCaseDigit :: String -> Maybe [ParserAny]
+stringToParserCaseDigit []    = Nothing
+stringToParserCaseDigit (h:t) = case runParser (parseInt) (h:t) of
+  Just (int, inp)  -> stringToParserAdd (ParserInt int) inp
+  Nothing           -> Nothing
+
+stringToParser :: String -> Maybe [ParserAny]
+stringToParser [] = Just ([])
+stringToParser (h:t)
+  | stringToParserIsEmpty h = stringToParser t
+  | stringToParserIsUnique h = stringToParserCaseUnique (h:t)
+  | isDigit h = stringToParserCaseDigit (h:t)
+  | otherwise = case runParser (parseSome (parseAnyChar stringList)) (h:t) of
+    Just (str, inp)   -> stringToParserAdd (ParserString str) inp
+    Nothing           -> Nothing

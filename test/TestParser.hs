@@ -16,7 +16,8 @@ module TestParser (
   testParseUInt,
   testParseInt,
   testParsePair,
-  testParseList
+  testParseList,
+  testStringToParser
   ) where
 
 import Test.HUnit
@@ -50,6 +51,15 @@ testParseAnyChar =
         ~?= Nothing,
       "parseAnyChar should fail if the string is empty"
         ~: runParser (parseAnyChar "abc") ""
+        ~?= Nothing,
+      "parseAnyChar Lipatant 1"
+        ~: runParser (parseAnyChar "abc") "abc"
+        ~?= Just ('a', "bc"),
+      "parseAnyChar Lipatant 2"
+        ~: runParser (parseAnyChar "abc") "bc"
+        ~?= Just ('b', "c"),
+      "parseAnyChar Lipatant 3"
+        ~: runParser (parseAnyChar "abc") "zabc"
         ~?= Nothing
     ]
 
@@ -157,3 +167,18 @@ testParseList =
         runParser (parseList (parsePair parseInt)) "((1 2) (3 4) (5 6) (7 8) (9 10))foo bar as always"
         ~?= Just ([(1, 2), (3, 4), (5, 6), (7, 8), (9, 10)], "foo bar as always")
     ]
+
+testStringToParser :: Test
+testStringToParser =
+  TestList
+  [
+    "stringToParser Lipatant 1" ~:
+      stringToParser "12345"
+      ~?= Just [ParserInt 12345],
+    "stringToParser Lipatant 2" ~:
+      stringToParser "(define x 5)"
+      ~?= Just [ParserChar '(',ParserString "define",ParserString "x",ParserInt 5,ParserChar ')'],
+    "stringToParser Lipatant 3" ~:
+      stringToParser "(define x 5)\nx(if (> x 4) 1 0)\n(define y (+ 5 x))"
+      ~?= Just [ParserChar '(',ParserString "define",ParserString "x",ParserInt 5,ParserChar ')',ParserString "x",ParserChar '(',ParserString "if",ParserChar '(',ParserString ">",ParserString "x",ParserInt 4,ParserChar ')',ParserInt 1,ParserInt 0,ParserChar ')',ParserChar '(',ParserString "define",ParserString "y",ParserChar '(',ParserString "+",ParserInt 5,ParserString "x",ParserChar ')',ParserChar ')']
+  ]

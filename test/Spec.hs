@@ -27,7 +27,8 @@ import TestParser (
   testParseUInt,
   testParseInt,
   testParsePair,
-  testParseList
+  testParseList,
+  testStringToParser
   )
 
 main :: IO ()
@@ -73,4 +74,6 @@ main = do
   _ <- runTestTT testParsePair
   putStrLn "Run test for parseList"
   _ <- runTestTT testParseList
+  putStrLn "Run test for stringToParser"
+  _ <- runTestTT testStringToParser
   return ()
