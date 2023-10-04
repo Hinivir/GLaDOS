@@ -156,8 +156,6 @@ parsePair parser1 parser2 =
     (_, input5) <- runParser (parseChar ')') input4
     return ((y, z), input5)
 
-
-
 parseList :: Parser a -> Parser [a]
 parseList parser =
   Parser $ \input ->

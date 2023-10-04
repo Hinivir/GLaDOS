@@ -20,22 +20,22 @@ errorExit msg = hPutStrLn stderr msg >> exitWith (ExitFailure 84)
 -- Take a Boolean
 -- If true: then calls errorExit with "No input"
 -- If false: read standard input, display it, continue to the end of the file
-mainCheckEOF :: IO ()
-mainCheckEOF = do
+readLines :: IO [String]
+readLines = do
     line <- getLine
-    putStrLn line
     isEOF' <- isEOF
-    case isEOF' of
-        True -> return ()
-        False -> mainCheckEOF
+    if isEOF'
+        then return [line]
+        else do
+            rest <- readLines
+            return (line : rest)
 
--- function main
--- Take IO (it's the main)
--- If no standard input then error
--- Otherwise passes standard input to the rest of the program
 main :: IO ()
 main = do
     isEOF' <- isEOF
-    case isEOF' of
-        True -> errorExit "No input"
-        False -> mainCheckEOF
+    if isEOF'
+        then errorExit "No input"
+        else do
+            linesList <- readLines
+            mapM_ putStrLn linesList
+
