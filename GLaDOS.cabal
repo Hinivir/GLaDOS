@@ -28,6 +28,7 @@ library
       Lib
       Parser
       ParserToSExpr
+      ReadPathFile
       SExpr
   other-modules:
       Paths_GLaDOS
