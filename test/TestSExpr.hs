@@ -5,10 +5,20 @@
 -- test for SExpr
 -}
 
-module TestSExpr (testSExpr, printTreeTests) where
+module TestSExpr (
+  testSExpr,
+  printTreeTests,
+  testParserToSExprInt,
+  testParserToSExpr
+) where
 
 import SExpr
+import ParserToSExpr
 import Test.HUnit
+import Parser (
+  stringToParser,
+  ParserAny(..)
+  )
 
 -- Define test cases
 testSExpr :: Test
@@ -50,4 +60,39 @@ printTreeTests =
       "printTree should handle (define y (+ 5 x))"
         ~: printTree (SList [SSym "define", SSym "y", SList [SSym "+", SInt 5, SSym "x"]])
         ~?= "a List with (a Symbol 'define', a Symbol 'y', a List with (a Symbol '+', a Number 5, a Symbol 'x'))"
+    ]
+
+-- PARSER TO SEXPR
+
+testParserToSExprInt :: Test
+testParserToSExprInt =
+  test
+    [
+      "parserToSExprInt Lipatant 1" ~:
+        runParserToSexpr parserToSExprInt [(ParserInt 10),(ParserInt 11),(ParserInt 12)]
+        ~?= Just ((SInt 10),[(ParserInt 11),(ParserInt 12)]),
+      "parserToSExprInt Lipatant 2" ~:
+        runParserToSexpr parserToSExprInt [(ParserInt 10)]
+        ~?= Just ((SInt 10), []),
+      "parserToSExprInt Lipatant 3" ~:
+        runParserToSexpr parserToSExprInt [(ParserInt (-42))]
+        ~?= Just ((SInt (-42)), []),
+      "parserToSExprInt Lipatant 4" ~:
+        runParserToSexpr parserToSExprInt [(ParserChar 'E')]
+        ~?= Nothing
+    ]
+
+testParserToSExpr :: Test
+testParserToSExpr =
+  test
+    [
+      "parserToSExpr Lipatant 1" ~:
+        parserToSExpr (stringToParser "12345")
+        ~?= Nothing,
+      "parserToSExpr Lipatant 2" ~:
+        parserToSExpr (stringToParser "(define x 5)")
+        ~?= Nothing,
+      "parserToSExpr Lipatant 3" ~:
+        parserToSExpr (stringToParser "(define x 5)\nx(if (> x 4) 1 0)\n(define y (+ 5 x))")
+        ~?= Nothing
     ]

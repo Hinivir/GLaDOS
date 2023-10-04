@@ -26,7 +26,7 @@ data SExpr
   = -- | A symbol.
     SSym String
   | -- | An integer.
-    SInt Integer
+    SInt Int
   | -- | A list of S-Expressions.
     SList [SExpr]
   | -- | A Boolean
@@ -43,7 +43,7 @@ getSymbol _ = Nothing
 -- | Returns the integer value of an S-Expression if it is an integer.
 --
 -- Returns 'Nothing' if the S-Expression is not an integer.
-getInteger :: SExpr -> Maybe Integer
+getInteger :: SExpr -> Maybe Int
 getInteger (SInt n) = Just n
 getInteger _ = Nothing
 

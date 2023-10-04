@@ -6,11 +6,47 @@
 -}
 
 module ParserToSExpr (
-    parserToSExpr
+  runParserToSexpr,
+  parserToSExprInt,
+  parserToSExprChar,
+  parserToSExprList,
+  parserToSExpr
 ) where
 
-import Parser (Parser)
-import SExpr (SExpr)
+import Parser (ParserAny(ParserInt, ParserChar))
+import SExpr (SExpr(..))
 
-parserToSExpr :: Parser Char -> Maybe SExpr
-parserToSExpr _ = Nothing
+data ParserToSexpr =
+  ParserToSexpr
+    { runParserToSexpr :: [ParserAny] -> Maybe (SExpr, [ParserAny])
+    }
+
+parserToSExprInt :: ParserToSexpr
+parserToSExprInt =
+  ParserToSexpr $ \input ->
+    case input of
+      ((ParserInt int):t) -> Just (SInt int, t)
+      _                   -> Nothing
+
+parserToSExprChar :: ParserToSexpr
+parserToSExprChar =
+  ParserToSexpr $ \input ->
+    case input of
+      ((ParserChar '('):t) -> runParserToSexpr parserToSExprList t
+      _       -> Nothing
+
+parserToSExprList :: ParserToSexpr
+parserToSExprList =
+  ParserToSexpr $ \input ->
+    Nothing
+
+--parserToSExprList =
+
+parserToSExprParserAny :: [ParserAny] -> Maybe SExpr
+parserToSExprParserAny [] = Nothing
+parserToSExprParserAny ((ParserInt int):t) = Just (SInt int)
+parserToSExprParserAny _ = Nothing
+
+parserToSExpr :: Maybe [ParserAny] -> Maybe SExpr
+parserToSExpr Nothing = Nothing
+parserToSExpr (Just list) = parserToSExprParserAny list

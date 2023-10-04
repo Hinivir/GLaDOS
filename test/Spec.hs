@@ -6,7 +6,12 @@
 -}
 
 import Test.HUnit
-import TestSExpr (printTreeTests, testSExpr)
+import TestSExpr (
+  printTreeTests,
+  testSExpr,
+  testParserToSExprInt,
+  testParserToSExpr
+  )
 import TestAst (
   testSExprToAst,
   testEvalAdd,
@@ -33,12 +38,8 @@ import TestParser (
 
 main :: IO ()
 main = do
-  putStrLn "Run test for SExpr"
-  _ <- runTestTT testSExpr
   putStrLn "Run test for printTree"
   _ <- runTestTT printTreeTests
-  putStrLn "Run test for SExpr to Ast"
-  _ <- runTestTT testSExprToAst
   putStrLn "Run test for EvalAdd"
   _ <- runTestTT testEvalAdd
   putStrLn "Run test for EvalSub"
@@ -76,4 +77,13 @@ main = do
   _ <- runTestTT testParseList
   putStrLn "Run test for stringToParser"
   _ <- runTestTT testStringToParser
+  -- testSEpr
+  putStrLn "Run test for SExpr"
+  _ <- runTestTT testSExpr
+  putStrLn "Run test for SExpr to Ast"
+  _ <- runTestTT testSExprToAst
+  putStrLn "Run test for Parser to SExpr Int"
+  _ <- runTestTT testParserToSExprInt
+  putStrLn "Run test for Parser to SExpr"
+  _ <- runTestTT testParserToSExpr
   return ()
