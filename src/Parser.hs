@@ -31,6 +31,7 @@ module Parser
   , parseInt
   , parsePair
   , parseList
+--  , stringToParser
   ) where
 
 import Data.Char (isDigit)
@@ -67,16 +68,6 @@ parseChar c =
         | x == c -> Just (c, xs)
       _ -> Nothing
 
-
--- | Parse a list of char in a string
---
--- Returns 'Nothing' if ther is not the char in the string.
--- Returns 'Just' the char and the rest of the string.
---parseAnyChar (x:xs) (y:ys)
---parseAnyChar :: String -> Parser Char
---  | x == y = Just (y, ys)
---  | otherwise = parseAnyChar xs (y:ys)
---parseAnyChar _ _ = Nothing
 parseOr :: Parser a -> Parser a -> Parser a
 parseOr p1 p2 =
   Parser $ \input ->
@@ -84,8 +75,10 @@ parseOr p1 p2 =
       Just (result, remaining) -> Just (result, remaining)
       Nothing -> runParser p2 input
 
-
-
+-- | Parse a list of char in a string
+--
+-- Returns 'Nothing' if ther is not the char in the string.
+-- Returns 'Just' the char and the rest of the string.
 parseAnyChar :: String -> Parser Char
 parseAnyChar (x:xs) = parseOr (parseChar x) (parseAnyChar xs)
 parseAnyChar []     = Parser $ const Nothing
@@ -165,7 +158,6 @@ parsePair parser =
     return ((y, z), input6)
 --parsePair _ = Parser $ const Nothing
 
-
 parseListSegment :: Parser a -> [a] -> Parser [a]
 parseListSegment parser list =
   Parser $ \input1 -> do
@@ -178,7 +170,13 @@ parseListSegment parser list =
 
 parseList :: Parser a -> Parser [a]
 parseList parser =
-  Parser $ \input ->
-    case runParser (parseMany parser) input of
-      Just (results, remaining) -> Just (results, remaining)
-      Nothing                   -> Nothing
+  Parser $ \input1 -> do
+    (_, input2) <- runParser (parseChar '(') input1
+    (list, input3) <- runParser (parseListSegment parser []) input2
+    case runParser (parseChar ')') input3 of
+      Just (_, input4)  -> Just (list, input4)
+      Nothing           -> Nothing
+
+--stringToParser :: String -> Parser Char
+--stringToParser _ = Nothing
+--stringToParser
