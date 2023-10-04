@@ -10,6 +10,7 @@ import TestSExpr (
   printTreeTests,
   testSExpr,
   testParserToSExprInt,
+  testParserToSExprList,
   testParserToSExpr
   )
 import TestAst (
@@ -84,6 +85,8 @@ main = do
   _ <- runTestTT testSExprToAst
   putStrLn "Run test for Parser to SExpr Int"
   _ <- runTestTT testParserToSExprInt
+  putStrLn "Run test for Parser to SExpr List"
+  _ <- runTestTT testParserToSExprList
   putStrLn "Run test for Parser to SExpr"
   _ <- runTestTT testParserToSExpr
   return ()

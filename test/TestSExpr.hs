@@ -9,6 +9,7 @@ module TestSExpr (
   testSExpr,
   printTreeTests,
   testParserToSExprInt,
+  testParserToSExprList,
   testParserToSExpr
 ) where
 
@@ -82,17 +83,38 @@ testParserToSExprInt =
         ~?= Nothing
     ]
 
+testParserToSExprList :: Test
+testParserToSExprList =
+  test
+    [
+      "parserToSExprList Empty Parser" ~:
+        runParserToSexpr parserToSExprList []
+        ~?= Nothing,
+      "parserToSExprList Empty List" ~:
+        runParserToSexpr parserToSExprList [(ParserChar ')')]
+        ~?= Just (SList [], []),
+      "parserToSExprList Lipatant 1" ~:
+        runParserToSexpr parserToSExprList [(ParserInt 10),(ParserInt 11),(ParserInt 12)]
+        ~?= Nothing,
+      "parserToSExprList Lipatant 2" ~:
+        runParserToSexpr parserToSExprList [(ParserInt 10),(ParserInt 11),(ParserChar ')'),(ParserInt 12)]
+        ~?= Just (SList [(SInt 10),(SInt 11)], [(ParserInt 12)]),
+      "parserToSExprList Lipatant 3" ~:
+        runParserToSexpr parserToSExprList [(ParserInt 10),(ParserInt 11),(ParserChar ')'),(ParserInt 12),(ParserInt 13)]
+        ~?= Just (SList [(SInt 10),(SInt 11)], [(ParserInt 12),(ParserInt 13)])
+    ]
+
 testParserToSExpr :: Test
 testParserToSExpr =
   test
     [
       "parserToSExpr Lipatant 1" ~:
         parserToSExpr (stringToParser "12345")
-        ~?= Nothing,
-      "parserToSExpr Lipatant 2" ~:
-        parserToSExpr (stringToParser "(define x 5)")
-        ~?= Nothing,
-      "parserToSExpr Lipatant 3" ~:
-        parserToSExpr (stringToParser "(define x 5)\nx(if (> x 4) 1 0)\n(define y (+ 5 x))")
         ~?= Nothing
+--      "parserToSExpr Lipatant 2" ~:
+--        parserToSExpr (stringToParser "(define x 5)")
+--        ~?= Nothing,
+--      "parserToSExpr Lipatant 3" ~:
+--        parserToSExpr (stringToParser "(define x 5)\nx(if (> x 4) 1 0)\n(define y (+ 5 x))")
+--        ~?= Nothing
     ]

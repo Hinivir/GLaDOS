@@ -44,7 +44,6 @@ parserToSExprList =
 
 parserToSExprParserAny :: [ParserAny] -> Maybe SExpr
 parserToSExprParserAny [] = Nothing
-parserToSExprParserAny ((ParserInt int):t) = Just (SInt int)
 parserToSExprParserAny _ = Nothing
 
 parserToSExpr :: Maybe [ParserAny] -> Maybe SExpr
