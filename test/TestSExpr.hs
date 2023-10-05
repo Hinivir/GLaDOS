@@ -135,11 +135,14 @@ testParserToSExpr =
     [
       "parserToSExpr Lipatant 1" ~:
         parserToSExpr (stringToParser "12345")
-        ~?= Nothing
---      "parserToSExpr Lipatant 2" ~:
---        parserToSExpr (stringToParser "(define x 5)")
---        ~?= Nothing,
---      "parserToSExpr Lipatant 3" ~:
---        parserToSExpr (stringToParser "(define x 5)\nx(if (> x 4) 1 0)\n(define y (+ 5 x))")
---        ~?= Nothing
+        ~?= Just (SList [SInt 12345]),
+      "parserToSExpr Lipatant 2" ~:
+        parserToSExpr (stringToParser "(define x 5)")
+        ~?= Just (SList [SList [SSym "define",SSym "x",SInt 5]]),
+      "parserToSExpr Lipatant 3" ~:
+        parserToSExpr (stringToParser "(define x 5")
+        ~?= Nothing,
+      "parserToSExpr Lipatant 4" ~:
+        parserToSExpr (stringToParser "(define x 5)\nx(if (> x 4) 1 0)\n(define y (+ 5 x))")
+        ~?= Just (SList [SList [SSym "define",SSym "x",SInt 5],SSym "x",SList [SSym "if",SList [SSym ">",SSym "x",SInt 4],SInt 1,SInt 0],SList [SSym "define",SSym "y",SList [SSym "+",SInt 5,SSym "x"]]])
     ]

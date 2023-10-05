@@ -56,6 +56,16 @@ parserToSExprList =
         Just (SList out3, in3)  -> Just (SList (out2:out3), in3)
         _                             -> Nothing
 
+parserToSExprFakeList :: ParserToSexpr
+parserToSExprFakeList =
+  ParserToSexpr $ \input -> case input of
+    []                    -> Just (SList [], [])
+    _                     -> case runParserToSexpr parserToSExprAny input of
+      Nothing                 -> Nothing
+      Just (out2, in1)  -> case runParserToSexpr parserToSExprFakeList in1 of
+        Just (SList out3, in3)  -> Just (SList (out2:out3), in3)
+        _                             -> Nothing
+
 parserToSExprAny :: ParserToSexpr
 parserToSExprAny =
   ParserToSexpr $ \input -> case input of
@@ -68,6 +78,6 @@ parserToSExprAny =
 
 parserToSExpr :: Maybe [ParserAny] -> Maybe SExpr
 parserToSExpr Nothing = Nothing
-parserToSExpr (Just list) = case runParserToSexpr parserToSExprList list of
+parserToSExpr (Just list) = case runParserToSexpr parserToSExprFakeList list of
   Nothing           -> Nothing
   Just (output, _)  -> Just output
