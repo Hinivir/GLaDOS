@@ -6,7 +6,7 @@
 -}
 
 module ParserToSExpr (
-  runParserToSexpr,
+  runParserToSExpr,
   parserToSExprInt,
   parserToSExprChar,
   parserToSExprString,
@@ -17,67 +17,60 @@ module ParserToSExpr (
 import Parser (ParserAny(ParserInt, ParserChar, ParserString))
 import SExpr (SExpr(..))
 
-data ParserToSexpr =
-  ParserToSexpr
-    { runParserToSexpr :: [ParserAny] -> Maybe (SExpr, [ParserAny])
+data ParserToSExpr =
+  ParserToSExpr
+    { runParserToSExpr :: [ParserAny] -> Maybe (SExpr, [ParserAny])
     }
 
-parserToSExprInt :: ParserToSexpr
+parserToSExprInt :: ParserToSExpr
 parserToSExprInt =
-  ParserToSexpr $ \input ->
+  ParserToSExpr $ \input ->
     case input of
       ((ParserInt int):t) -> Just (SInt int, t)
       _                   -> Nothing
 
-parserToSExprChar :: ParserToSexpr
+parserToSExprChar :: ParserToSExpr
 parserToSExprChar =
-  ParserToSexpr $ \input ->
+  ParserToSExpr $ \input ->
     case input of
-      ((ParserChar '('):t) -> runParserToSexpr parserToSExprList t
+      ((ParserChar '('):t) -> runParserToSExpr parserToSExprList t
       _       -> Nothing
 
-parserToSExprString :: ParserToSexpr
+parserToSExprString :: ParserToSExpr
 parserToSExprString =
-  ParserToSexpr $ \input ->
+  ParserToSExpr $ \input ->
     case input of
       ((ParserString "True"):t)   -> Just (SBool True, t)
       ((ParserString "False"):t)  -> Just (SBool False, t)
       ((ParserString string):t)   -> Just (SSym string, t)
       _                           -> Nothing
 
-parserToSExprList :: ParserToSexpr
+parserToSExprList :: ParserToSExpr
 parserToSExprList =
-  ParserToSexpr $ \input -> case input of
+  ParserToSExpr $ \input -> case input of
     []                    -> Nothing
     ((ParserChar ')'):t)  -> Just (SList [], t)
-    _                     -> case runParserToSexpr parserToSExprAny input of
+    _                     -> case runParserToSExpr parserToSExprAny input of
       Nothing                 -> Nothing
-      Just (out2, in1)  -> case runParserToSexpr parserToSExprList in1 of
+      Just (out2, in1)  -> case runParserToSExpr parserToSExprList in1 of
         Just (SList out3, in3)  -> Just (SList (out2:out3), in3)
         _                             -> Nothing
 
-parserToSExprFakeList :: ParserToSexpr
-parserToSExprFakeList =
-  ParserToSexpr $ \input -> case input of
-    []                    -> Just (SList [], [])
-    _                     -> case runParserToSexpr parserToSExprAny input of
-      Nothing                 -> Nothing
-      Just (out2, in1)  -> case runParserToSexpr parserToSExprFakeList in1 of
-        Just (SList out3, in3)  -> Just (SList (out2:out3), in3)
-        _                             -> Nothing
-
-parserToSExprAny :: ParserToSexpr
+parserToSExprAny :: ParserToSExpr
 parserToSExprAny =
-  ParserToSexpr $ \input -> case input of
+  ParserToSExpr $ \input -> case input of
     []    -> Nothing
     (h:_) -> case h of
-      (ParserInt _)     -> runParserToSexpr parserToSExprInt input
-      (ParserChar _)    -> runParserToSexpr parserToSExprChar input
-      (ParserString _)  -> runParserToSexpr parserToSExprString input
+      (ParserInt _)     -> runParserToSExpr parserToSExprInt input
+      (ParserChar _)    -> runParserToSExpr parserToSExprChar input
+      (ParserString _)  -> runParserToSExpr parserToSExprString input
 --      _                 -> Nothing
 
 parserToSExpr :: Maybe [ParserAny] -> Maybe SExpr
 parserToSExpr Nothing = Nothing
-parserToSExpr (Just list) = case runParserToSexpr parserToSExprFakeList list of
-  Nothing           -> Nothing
-  Just (output, _)  -> Just output
+parserToSExpr (Just list) =
+  case runParserToSExprList (list ++ [(ParserChar ')')]) of
+    Nothing           -> Nothing
+    Just (output, _)  -> Just output
+  where
+    runParserToSExprList = runParserToSExpr parserToSExprList

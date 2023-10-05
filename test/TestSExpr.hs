@@ -71,16 +71,16 @@ testParserToSExprInt =
   test
     [
       "parserToSExprInt Lipatant 1" ~:
-        runParserToSexpr parserToSExprInt [(ParserInt 10),(ParserInt 11),(ParserInt 12)]
+        runParserToSExpr parserToSExprInt [(ParserInt 10),(ParserInt 11),(ParserInt 12)]
         ~?= Just ((SInt 10),[(ParserInt 11),(ParserInt 12)]),
       "parserToSExprInt Lipatant 2" ~:
-        runParserToSexpr parserToSExprInt [(ParserInt 10)]
+        runParserToSExpr parserToSExprInt [(ParserInt 10)]
         ~?= Just ((SInt 10), []),
       "parserToSExprInt Lipatant 3" ~:
-        runParserToSexpr parserToSExprInt [(ParserInt (-42))]
+        runParserToSExpr parserToSExprInt [(ParserInt (-42))]
         ~?= Just ((SInt (-42)), []),
       "parserToSExprInt Lipatant 4" ~:
-        runParserToSexpr parserToSExprInt [(ParserChar 'E')]
+        runParserToSExpr parserToSExprInt [(ParserChar 'E')]
         ~?= Nothing
     ]
 
@@ -89,19 +89,19 @@ testParserToSExprString =
   test
     [
       "parserToSExprString Lipatant 1" ~:
-        runParserToSexpr parserToSExprString [(ParserString "One"),(ParserString "Two"),(ParserString "Three")]
+        runParserToSExpr parserToSExprString [(ParserString "One"),(ParserString "Two"),(ParserString "Three")]
         ~?= Just ((SSym "One"),[(ParserString "Two"),(ParserString "Three")]),
       "parserToSExprString Lipatant 2" ~:
-        runParserToSexpr parserToSExprString [(ParserString "True")]
+        runParserToSExpr parserToSExprString [(ParserString "True")]
         ~?= Just ((SBool True), []),
       "parserToSExprString Lipatant 2" ~:
-        runParserToSexpr parserToSExprString [(ParserString "False"),(ParserString "MaybeTrue"),(ParserString "True"),(ParserString "YeahIdk")]
+        runParserToSExpr parserToSExprString [(ParserString "False"),(ParserString "MaybeTrue"),(ParserString "True"),(ParserString "YeahIdk")]
         ~?= Just ((SBool False), [(ParserString "MaybeTrue"),(ParserString "True"),(ParserString "YeahIdk")]),
       "parserToSExprString Lipatant 3" ~:
-        runParserToSexpr parserToSExprString [(ParserInt (-42))]
+        runParserToSExpr parserToSExprString [(ParserInt (-42))]
         ~?= Nothing,
       "parserToSExprString Lipatant 4" ~:
-        runParserToSexpr parserToSExprString [(ParserChar 'E')]
+        runParserToSExpr parserToSExprString [(ParserChar 'E')]
         ~?= Nothing
     ]
 
@@ -110,22 +110,22 @@ testParserToSExprList =
   test
     [
       "parserToSExprList Empty Parser" ~:
-        runParserToSexpr parserToSExprList []
+        runParserToSExpr parserToSExprList []
         ~?= Nothing,
       "parserToSExprList Empty List" ~:
-        runParserToSexpr parserToSExprList [(ParserChar ')')]
+        runParserToSExpr parserToSExprList [(ParserChar ')')]
         ~?= Just (SList [], []),
       "parserToSExprList Lipatant 1" ~:
-        runParserToSexpr parserToSExprList [(ParserInt 10),(ParserInt 11),(ParserInt 12)]
+        runParserToSExpr parserToSExprList [(ParserInt 10),(ParserInt 11),(ParserInt 12)]
         ~?= Nothing,
       "parserToSExprList Lipatant 2" ~:
-        runParserToSexpr parserToSExprList [(ParserInt 10),(ParserInt 11),(ParserChar ')'),(ParserInt 12)]
+        runParserToSExpr parserToSExprList [(ParserInt 10),(ParserInt 11),(ParserChar ')'),(ParserInt 12)]
         ~?= Just (SList [(SInt 10),(SInt 11)], [(ParserInt 12)]),
       "parserToSExprList Lipatant 3" ~:
-        runParserToSexpr parserToSExprList [(ParserInt 10),(ParserInt 11),(ParserChar ')'),(ParserInt 12),(ParserInt 13)]
+        runParserToSExpr parserToSExprList [(ParserInt 10),(ParserInt 11),(ParserChar ')'),(ParserInt 12),(ParserInt 13)]
         ~?= Just (SList [(SInt 10),(SInt 11)], [(ParserInt 12),(ParserInt 13)]),
       "parserToSExprList Lipatant 4" ~:
-        runParserToSexpr parserToSExprList [(ParserString "True"),(ParserString "False"),(ParserChar ')'),(ParserInt 12),(ParserInt 13)]
+        runParserToSExpr parserToSExprList [(ParserString "True"),(ParserString "False"),(ParserChar ')'),(ParserInt 12),(ParserInt 13)]
         ~?= Just (SList [(SBool True),(SBool False)], [(ParserInt 12),(ParserInt 13)])
     ]
 
