@@ -33,8 +33,8 @@ parserToSExprChar :: ParserToSExpr
 parserToSExprChar =
   ParserToSExpr $ \input ->
     case input of
-      ((ParserChar '('):t) -> runParserToSExpr parserToSExprList t
-      _       -> Nothing
+      ((ParserChar '('):t)  -> runParserToSExpr parserToSExprList t
+      _                     -> Nothing
 
 parserToSExprString :: ParserToSExpr
 parserToSExprString =
@@ -51,10 +51,10 @@ parserToSExprList =
     []                    -> Nothing
     ((ParserChar ')'):t)  -> Just (SList [], t)
     _                     -> case runParserToSExpr parserToSExprAny input of
-      Nothing                 -> Nothing
+      Nothing           -> Nothing
       Just (out2, in1)  -> case runParserToSExpr parserToSExprList in1 of
         Just (SList out3, in3)  -> Just (SList (out2:out3), in3)
-        _                             -> Nothing
+        _                       -> Nothing
 
 parserToSExprAny :: ParserToSExpr
 parserToSExprAny =
