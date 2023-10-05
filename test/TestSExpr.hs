@@ -9,6 +9,7 @@ module TestSExpr (
   testSExpr,
   printTreeTests,
   testParserToSExprInt,
+  testParserToSExprString,
   testParserToSExprList,
   testParserToSExpr
 ) where
@@ -83,6 +84,27 @@ testParserToSExprInt =
         ~?= Nothing
     ]
 
+testParserToSExprString :: Test
+testParserToSExprString =
+  test
+    [
+      "parserToSExprString Lipatant 1" ~:
+        runParserToSexpr parserToSExprString [(ParserString "One"),(ParserString "Two"),(ParserString "Three")]
+        ~?= Just ((SSym "One"),[(ParserString "Two"),(ParserString "Three")]),
+      "parserToSExprString Lipatant 2" ~:
+        runParserToSexpr parserToSExprString [(ParserString "True")]
+        ~?= Just ((SBool True), []),
+      "parserToSExprString Lipatant 2" ~:
+        runParserToSexpr parserToSExprString [(ParserString "False"),(ParserString "MaybeTrue"),(ParserString "True"),(ParserString "YeahIdk")]
+        ~?= Just ((SBool False), [(ParserString "MaybeTrue"),(ParserString "True"),(ParserString "YeahIdk")]),
+      "parserToSExprString Lipatant 3" ~:
+        runParserToSexpr parserToSExprString [(ParserInt (-42))]
+        ~?= Nothing,
+      "parserToSExprString Lipatant 4" ~:
+        runParserToSexpr parserToSExprString [(ParserChar 'E')]
+        ~?= Nothing
+    ]
+
 testParserToSExprList :: Test
 testParserToSExprList =
   test
@@ -101,7 +123,10 @@ testParserToSExprList =
         ~?= Just (SList [(SInt 10),(SInt 11)], [(ParserInt 12)]),
       "parserToSExprList Lipatant 3" ~:
         runParserToSexpr parserToSExprList [(ParserInt 10),(ParserInt 11),(ParserChar ')'),(ParserInt 12),(ParserInt 13)]
-        ~?= Just (SList [(SInt 10),(SInt 11)], [(ParserInt 12),(ParserInt 13)])
+        ~?= Just (SList [(SInt 10),(SInt 11)], [(ParserInt 12),(ParserInt 13)]),
+      "parserToSExprList Lipatant 4" ~:
+        runParserToSexpr parserToSExprList [(ParserString "True"),(ParserString "False"),(ParserChar ')'),(ParserInt 12),(ParserInt 13)]
+        ~?= Just (SList [(SBool True),(SBool False)], [(ParserInt 12),(ParserInt 13)])
     ]
 
 testParserToSExpr :: Test
