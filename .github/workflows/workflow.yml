@@ -14,6 +14,7 @@ env:
   CHECKER: ".github/script/check_res_cs.sh"
   CODING_STYLE: ".github/script/check.sh"
   LAMBDANANAS: ".github/script/lambdananas"
+  BINARIE: "glados"
 
 jobs:
   check_coding_style:
@@ -35,16 +36,37 @@ jobs:
           chmod +x ./$CHECKER
           ./$CHECKER  && exit  $? || exit 1
 
-  #check_unit_test:
-  #  name: Check Unit Test
-  #  runs-on: ubuntu-latest
-  #  container: hinivir/docker_glados
-  #  steps:
-  #    - uses: actions/checkout@v3
-  #    - name: Launch test
-  #      run: make test_run
-  #    - name: Clean
-  #      run: make fclean
+  check_compile:
+    name: Check compile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: add haskel part
+        uses: haskell/actions/setup@v2
+        with:
+          ghc-version: '9.2.8'
+          enable-stack: true
+          stack-version: 'latest'
+      - name: Run make
+        run: make
+      - name: Run make clean
+        run: make clean
+      - name: Check if binarie is compiled
+        run: find -name "$BINARIE" | grep -q . && exit 0 || exit 1
+
+  check_unit_test:
+    name: Check Unit Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: add haskel part
+        uses: haskell/actions/setup@v2
+        with:
+          ghc-version: '9.2.8'
+          enable-stack: true
+          stack-version: 'latest'
+      - name: Run test haskell with stack
+        run: stack test --coverage
 
   push_to_mirror:
     name: Push to Epitech repository
@@ -62,4 +84,4 @@ jobs:
             ${{ env.URL }}
           ssh_private_key:
             ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-    needs: [ check_coding_style ]
+    needs: [ check_coding_style, check_compile, check_unit_test ]

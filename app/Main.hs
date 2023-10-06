@@ -1,4 +1,4 @@
-{- 
+{-
 -- EPITECH PROJECT, 2023
 -- glados_mirror
 -- File description:
@@ -38,4 +38,3 @@ main = do
         else do
             linesList <- readLines
             mapM_ putStrLn linesList
-
