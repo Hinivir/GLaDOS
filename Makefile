@@ -30,10 +30,13 @@ test_run:
 coverage:
 	$(STACK) test --coverage
 
+functional_test:
+	./test/functional_test.sh
+
 fclean_test: fclean
 	$(STACK) purge --test
 
 doc:
 	$(STACK) haddock --haddock-arguments "--odir=docs/haddock"
 
-.phony: all clean fclean re test_run coverage fclean_test doc
+.phony: all clean fclean re test_run coverage functional_test fclean_test doc
