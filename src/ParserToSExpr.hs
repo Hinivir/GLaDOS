@@ -14,8 +14,13 @@ module ParserToSExpr (
   parserToSExpr
 ) where
 
-import Parser (ParserAny(ParserInt, ParserChar, ParserString))
+-- Erreur Parser ?
+import ParserData
 import SExpr (SExpr(..))
+
+-------------------------------------------------
+import Ast()
+-------------------------------------------------
 
 data ParserToSExpr =
   ParserToSExpr
@@ -66,11 +71,23 @@ parserToSExprAny =
       (ParserString _)  -> runParserToSExpr parserToSExprString input
 --      _                 -> Nothing
 
+-- function parserToSExpr
+--
+-- It's all in the name of the function (...)
 parserToSExpr :: Maybe [ParserAny] -> Maybe SExpr
-parserToSExpr Nothing = Nothing
+parserToSExpr Nothing = Nothing --OK
 parserToSExpr (Just list) =
-  case runParserToSExprList (list ++ [(ParserChar ')')]) of
-    Nothing           -> Nothing
-    Just (output, _)  -> Just output
+  case runParserToSExprList (list ++ [(ParserChar ')')]) of -- Doit terminer par une ')'
+    Nothing           -> Nothing --OK
+    Just (output, _)  -> Just output --OK
+                         -- sexprToAst (Just output)
   where
     runParserToSExprList = runParserToSExpr parserToSExprList
+
+-------------------------------------------------
+{-
+Fichier => Ast.hs
+Fonction => sexprToAst :: SExpr -> Maybe Ast
+
+-}
+-------------------------------------------------

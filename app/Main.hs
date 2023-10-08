@@ -10,6 +10,11 @@ module Main (main) where
 import System.IO
 import System.Exit
 
+-------------------------------------------------
+-- ERREUR Erreur d'importation <!!!>
+import Parser
+-------------------------------------------------
+
 -- function errorExit
 -- Take a String
 -- Prints it on error output with exitWith 84 (for indicates an error)
@@ -38,3 +43,20 @@ main = do
         else do
             linesList <- readLines
             mapM_ putStrLn linesList
+-------------------------------------------------
+            -- appelle fin du main après stock linelist HERE
+            stringToparser linesList
+
+{-
+
+PL
+
+ici appelle stringToParser
+Fichier => Parser.hs
+Prototype => stringToParser :: String -> Maybe [ParserAny]
+
+linesList => pour les lignes du fichiers OK
+afficher toutes les lignes OK mapM <=> traitement tous les éléments lineslist
+
+-}
+-------------------------------------------------

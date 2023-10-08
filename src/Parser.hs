@@ -18,7 +18,6 @@ Le type `BetterParser` est similaire à `Parser`, mais renvoie également une ch
 -}
 module Parser
   ( Parser
-  , ParserAny (ParserChar, ParserInt, ParserString)
   , runParser
   , BetterParser
   , parseChar
@@ -36,6 +35,12 @@ module Parser
   ) where
 
 import Data.Char (isDigit)
+import ParserData
+
+-------------------------------------------------
+-- ??? ast ok mais pas ParserToSExpr
+import ParserToSExpr(parserToSExpr)
+-------------------------------------------------
 
 --type Parser a = String -> Maybe (a, String)
 
@@ -56,9 +61,6 @@ data Parser a =
   Parser
     { runParser :: String -> Maybe (a, String)
     }
-
-data ParserAny = ParserChar Char | ParserInt Int | ParserString String
-  deriving (Eq, Show)
 
 -- | Parse a char in a string
 --
@@ -215,6 +217,9 @@ stringToParserCaseDigit (h:t) = case runParser (parseInt) (h:t) of
   Just (int, inp)  -> stringToParserAdd (ParserInt int) inp
   Nothing           -> Nothing
 
+-- function stringToParser
+--
+-- It's all in the name of the function (...)
 stringToParser :: String -> Maybe [ParserAny]
 stringToParser [] = Just ([])
 stringToParser (h:t)
@@ -222,5 +227,15 @@ stringToParser (h:t)
   | stringToParserIsUnique h = stringToParserCaseUnique (h:t)
   | isDigit h = stringToParserCaseDigit (h:t)
   | otherwise = case runParser (parseSome (parseAnyChar stringList)) (h:t) of
+------------------------------------------------- Appelle parsertoExpr avec retour de stringtoParser OK
+-- Fonctionnement fonction (fonction) ?
     Just (str, inp)   -> stringToParserAdd (ParserString str) inp
+         --parserToSExpr    (stringToParserAdd (ParserString str) inp)
     Nothing           -> Nothing
+
+-------------------------------------------------
+{-
+Fichier => ParserToSexpr.hs
+Fonction => parserToSExpr :: Maybe [ParserAny] -> Maybe SExpr
+-}
+-------------------------------------------------
