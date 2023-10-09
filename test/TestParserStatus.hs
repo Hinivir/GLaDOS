@@ -73,7 +73,10 @@ testInterpretParserStatus =
       "interpretParserStatus ParserStatusError Simple InfoEmpty" ~:
         interpretParserStatus (createParserStatusErrorSimple "Some Error" "")
         ~?= "Some Error",
-      "interpretParserStatus ParserStatusError Complete LnColEmpty" ~:
+      "interpretParserStatus ParserStatusError Complete AllFilled" ~:
         interpretParserStatus (createParserStatusError "Test Error" "This is why it doesn't work" 4 20)
-        ~?= "Test Error: This is why it doesn't work (Ln 4, Col 20)"
+        ~?= "Test Error: This is why it doesn't work (Ln 4, Col 20)",
+      "interpretParserStatus ParserStatusError Complete NameInfoEmpty" ~:
+        interpretParserStatus (createParserStatusError "" "" 4 20)
+        ~?= "Unknown Error (Ln 4, Col 20)"
     ]
