@@ -20,8 +20,7 @@ module ParserStatus
 -- DATA --
 
 data ParserStatus =
-  ParserStatusOK | ParserStatusError String String Int Int
-  deriving (Show)
+  ParserStatusOK | ParserStatusError String String Int Int deriving (Show, Eq)
 
 -- CREATING PARSERSTATUS --
 

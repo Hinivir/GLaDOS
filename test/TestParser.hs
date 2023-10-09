@@ -22,6 +22,10 @@ module TestParser (
 
 import Test.HUnit
 import Parser
+import ParserStatus (
+  createParserStatusOk,
+  interpretParserStatus
+  )
 
 testParseChar :: Test
 testParseChar =
@@ -172,13 +176,16 @@ testStringToParser :: Test
 testStringToParser =
   TestList
   [
+    "stringToParser Status Error 1" ~:
+      interpretParserStatus (isolateStringToParserStatus (stringToParser "12345E"))
+      ~?= "stringToParserCaseDigit",
     "stringToParser Lipatant 1" ~:
       stringToParser "12345"
-      ~?= Just [ParserInt 12345],
+      ~?= (Just [ParserInt 12345], createParserStatusOk),
     "stringToParser Lipatant 2" ~:
       stringToParser "(define x 5)"
-      ~?= Just [ParserChar '(',ParserString "define",ParserString "x",ParserInt 5,ParserChar ')'],
+      ~?= (Just [ParserChar '(',ParserString "define",ParserString "x",ParserInt 5,ParserChar ')'], createParserStatusOk),
     "stringToParser Lipatant 3" ~:
       stringToParser "(define x 5)\nx(if (> x 4) 1 0)\n(define y (+ 5 x))"
-      ~?= Just [ParserChar '(',ParserString "define",ParserString "x",ParserInt 5,ParserChar ')',ParserString "x",ParserChar '(',ParserString "if",ParserChar '(',ParserString ">",ParserString "x",ParserInt 4,ParserChar ')',ParserInt 1,ParserInt 0,ParserChar ')',ParserChar '(',ParserString "define",ParserString "y",ParserChar '(',ParserString "+",ParserInt 5,ParserString "x",ParserChar ')',ParserChar ')']
+      ~?= (Just [ParserChar '(',ParserString "define",ParserString "x",ParserInt 5,ParserChar ')',ParserString "x",ParserChar '(',ParserString "if",ParserChar '(',ParserString ">",ParserString "x",ParserInt 4,ParserChar ')',ParserInt 1,ParserInt 0,ParserChar ')',ParserChar '(',ParserString "define",ParserString "y",ParserChar '(',ParserString "+",ParserInt 5,ParserString "x",ParserChar ')',ParserChar ')'], createParserStatusOk)
   ]

@@ -40,9 +40,10 @@ getSExpr a = print (parserToSExpr a)
 
 
 parseLineList :: String -> IO()
-parseLineList linesList = case stringToParser linesList of
-        Nothing -> errorExit "Parse error"
-        parsedLines' -> getSExpr parsedLines'
+parseLineList _ = errorExit "Parse error"
+--parseLineList linesList = case stringToParser linesList of
+--        Nothing -> errorExit "Parse error"
+--        parsedLines' -> getSExpr parsedLines'
 
 
 main :: IO ()
