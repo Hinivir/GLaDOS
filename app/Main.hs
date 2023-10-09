@@ -9,6 +9,8 @@ module Main (main) where
 
 import System.IO
 import System.Exit
+import Parser(stringToParser, ParserAny)
+import ParserToSExpr(parserToSExpr)
 
 -- function errorExit
 -- Take a String
@@ -20,15 +22,28 @@ errorExit msg = hPutStrLn stderr msg >> exitWith (ExitFailure 84)
 -- Take a Boolean
 -- If true: then calls errorExit with "No input"
 -- If false: read standard input, display it, continue to the end of the file
-readLines :: IO [String]
+
+readLines :: IO String
 readLines = do
     line <- getLine
     isEOF' <- isEOF
     if isEOF'
-        then return [line]
+        then return ""
         else do
             rest <- readLines
-            return (line : rest)
+            return (line ++ "\n" ++ rest)
+
+
+getSExpr :: Maybe [ParserAny] -> IO()
+getSExpr Nothing = errorExit "Parse error"
+getSExpr a = print (parserToSExpr a)
+
+
+parseLineList :: String -> IO()
+parseLineList linesList = case stringToParser linesList of
+        Nothing -> errorExit "Parse error"
+        parsedLines' -> getSExpr parsedLines'
+
 
 main :: IO ()
 main = do
@@ -37,4 +52,8 @@ main = do
         then errorExit "No input"
         else do
             linesList <- readLines
-            mapM_ putStrLn linesList
+            parseLineList linesList
+
+--linesList  >  StringToParser   >  [Just(ParseAny)]  >  ParserToSExpr  >  Just SExpr  >  SExprToAst  >  Just Ast  >  Eval
+--                               >  Nothing                             >  Nothing                    >  Nothing
+--    x                 x               x                   x                  x
