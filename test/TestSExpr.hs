@@ -144,5 +144,8 @@ testParserToSExpr =
         ~?= Nothing,
       "parserToSExpr Lipatant 4" ~:
         parserToSExpr (stringToParser "(define x 5)\nx(if (> x 4) 1 0)\n(define y (+ 5 x))")
-        ~?= Just (SList [SList [SSym "define",SSym "x",SInt 5],SSym "x",SList [SSym "if",SList [SSym ">",SSym "x",SInt 4],SInt 1,SInt 0],SList [SSym "define",SSym "y",SList [SSym "+",SInt 5,SSym "x"]]])
+        ~?= Just (SList [SList [SSym "define",SSym "x",SInt 5],SSym "x",SList [SSym "if",SList [SSym ">",SSym "x",SInt 4],SInt 1,SInt 0],SList [SSym "define",SSym "y",SList [SSym "+",SInt 5,SSym "x"]]]),
+      "parserToSExpr Lipatant 5" ~:
+        parserToSExpr (stringToParser "(eq? (* 2 5) (- 11 1))")
+        ~?= Just (SList [SList [SSym "eq?",SList [SSym "*",SInt 2,SInt 5],SList [SSym "-",SInt 11,SInt 1]]])
     ]

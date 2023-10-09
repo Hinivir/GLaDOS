@@ -198,7 +198,7 @@ stringToParserIsUnique ')' = True
 stringToParserIsUnique _ = False
 
 stringListOperators :: [Char]
-stringListOperators = ['+', '-', '*', '/', '%', '>', '<', '=']
+stringListOperators = "+-*/%<>=" ++ "?!"
 
 stringList :: [Char]
 stringList = ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ stringListOperators
