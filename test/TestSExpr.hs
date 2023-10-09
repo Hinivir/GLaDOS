@@ -147,5 +147,11 @@ testParserToSExpr =
         ~?= Just (SList [SList [SSym "define",SSym "x",SInt 5],SSym "x",SList [SSym "if",SList [SSym ">",SSym "x",SInt 4],SInt 1,SInt 0],SList [SSym "define",SSym "y",SList [SSym "+",SInt 5,SSym "x"]]]),
       "parserToSExpr Lipatant 5" ~:
         parserToSExpr (stringToParser "(eq? (* 2 5) (- 11 1))")
-        ~?= Just (SList [SList [SSym "eq?",SList [SSym "*",SInt 2,SInt 5],SList [SSym "-",SInt 11,SInt 1]]])
+        ~?= Just (SList [SList [SSym "eq?",SList [SSym "*",SInt 2,SInt 5],SList [SSym "-",SInt 11,SInt 1]]]),
+      "parserToSExpr Lipatant 6" ~:
+        parserToSExpr (stringToParser "(if #t 1 2)")
+        ~?= Just (SList [SList [SSym "if",SSym "#t",SInt 1,SInt 2]]),
+      "parserToSExpr Lipatant 7" ~:
+        parserToSExpr (stringToParser "(define foo 42)\n(if (< foo 10)\n    (* foo 3)\n    (div foo 2))")
+        ~?= Just (SList [SList [SSym "define",SSym "foo",SInt 42],SList [SSym "if",SList [SSym "<",SSym "foo",SInt 10],SList [SSym "*",SSym "foo",SInt 3],SList [SSym "div",SSym "foo",SInt 2]]])
     ]
