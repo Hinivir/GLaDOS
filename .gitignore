@@ -12,4 +12,10 @@
 glados
 private*
 stack.yaml.lock
-.vscode
+lambdananas
+
+
+# useless file haskell
+*.hi
+*.o
+GLaDOS.cabal

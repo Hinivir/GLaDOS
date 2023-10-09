@@ -18,6 +18,7 @@ Le type `BetterParser` est similaire à `Parser`, mais renvoie également une ch
 -}
 module Parser
   ( Parser
+  , ParserAny (ParserChar, ParserInt, ParserString)
   , runParser
   , BetterParser
   , parseChar
@@ -31,6 +32,7 @@ module Parser
   , parseInt
   , parsePair
   , parseList
+  , stringToParser
   ) where
 
 import Data.Char (isDigit)
@@ -55,6 +57,9 @@ data Parser a =
     { runParser :: String -> Maybe (a, String)
     }
 
+data ParserAny = ParserChar Char | ParserInt Int | ParserString String
+  deriving (Eq, Show)
+
 -- | Parse a char in a string
 --
 -- Returns 'Nothing' if the char is not in the string.
@@ -67,16 +72,6 @@ parseChar c =
         | x == c -> Just (c, xs)
       _ -> Nothing
 
-
--- | Parse a list of char in a string
---
--- Returns 'Nothing' if ther is not the char in the string.
--- Returns 'Just' the char and the rest of the string.
---parseAnyChar (x:xs) (y:ys)
---parseAnyChar :: String -> Parser Char
---  | x == y = Just (y, ys)
---  | otherwise = parseAnyChar xs (y:ys)
---parseAnyChar _ _ = Nothing
 parseOr :: Parser a -> Parser a -> Parser a
 parseOr p1 p2 =
   Parser $ \input ->
@@ -84,8 +79,10 @@ parseOr p1 p2 =
       Just (result, remaining) -> Just (result, remaining)
       Nothing -> runParser p2 input
 
-
-
+-- | Parse a list of char in a string
+--
+-- Returns 'Nothing' if ther is not the char in the string.
+-- Returns 'Just' the char and the rest of the string.
 parseAnyChar :: String -> Parser Char
 parseAnyChar (x:xs) = parseOr (parseChar x) (parseAnyChar xs)
 parseAnyChar []     = Parser $ const Nothing
@@ -154,21 +151,76 @@ parseInt =
     parseNegativeInt = parseIntCheckNegative
 
 -- Parse a pair of integers enclosed in parentheses
-parsePair :: Parser a -> Parser b -> Parser (a, b)
-parsePair parser1 parser2 =
-  Parser $ \input -> do
-    (_, input1) <- runParser (parseChar '(') input
-    (y, input2) <- runParser parser1 input1
-    (_, input3) <- runParser (parseChar ',') input2
-    (z, input4) <- runParser parser2 input3
-    (_, input5) <- runParser (parseChar ')') input4
-    return ((y, z), input5)
+parsePair :: Parser a -> Parser (a, a)
+parsePair parser =
+  Parser $ \input1 -> do
+    (_, input2) <- runParser (parseChar '(') input1
+    (y, input3) <- runParser parser input2
+    (_, input4) <- runParser (parseChar ' ') input3
+    (z, input5) <- runParser parser input4
+    (_, input6) <- runParser (parseChar ')') input5
+    return ((y, z), input6)
 
-
+parseListSegment :: Parser a -> [a] -> Parser [a]
+parseListSegment parser list =
+  Parser $ \input1 -> do
+    (element, input2) <- runParser parser input1
+    case runParser (parseChar ' ') input2 of
+      Just (_, b) -> runParser (runParseListSegment (list ++ [element])) b
+      Nothing     -> Just ((list ++ [element]), input2)
+    where
+      runParseListSegment = parseListSegment parser
 
 parseList :: Parser a -> Parser [a]
 parseList parser =
-  Parser $ \input ->
-    case runParser (parseMany parser) input of
-      Just (results, remaining) -> Just (results, remaining)
-      Nothing                   -> Nothing
+  Parser $ \input1 -> do
+    (_, input2) <- runParser (parseChar '(') input1
+    (list, input3) <- runParser (parseListSegment parser []) input2
+    case runParser (parseChar ')') input3 of
+      Just (_, input4)  -> Just (list, input4)
+      Nothing           -> Nothing
+
+-- STRING TO PARSER --
+
+stringToParserAdd :: ParserAny -> String -> Maybe [ParserAny]
+stringToParserAdd element string = case stringToParser string of
+  Just list -> Just (element:list)
+  Nothing   -> Nothing
+
+stringToParserIsEmpty :: Char -> Bool
+stringToParserIsEmpty ' ' = True
+stringToParserIsEmpty '\n' = True
+stringToParserIsEmpty _ = False
+
+stringToParserIsUnique :: Char -> Bool
+stringToParserIsUnique '(' = True
+stringToParserIsUnique ')' = True
+stringToParserIsUnique _ = False
+
+stringListOperators :: [Char]
+stringListOperators = ['+', '-', '*', '/', '%', '>', '<', '=']
+
+stringList :: [Char]
+stringList = ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ stringListOperators
+
+stringToParserCaseUnique :: String -> Maybe [ParserAny]
+stringToParserCaseUnique []    = Nothing
+stringToParserCaseUnique (h:t) = case runParser (parseChar h) (h:t) of
+  Just (char, inp)  -> stringToParserAdd (ParserChar char) inp
+  Nothing           -> Nothing
+
+stringToParserCaseDigit :: String -> Maybe [ParserAny]
+stringToParserCaseDigit []    = Nothing
+stringToParserCaseDigit (h:t) = case runParser (parseInt) (h:t) of
+  Just (int, inp)  -> stringToParserAdd (ParserInt int) inp
+  Nothing           -> Nothing
+
+stringToParser :: String -> Maybe [ParserAny]
+stringToParser [] = Just ([])
+stringToParser (h:t)
+  | stringToParserIsEmpty h = stringToParser t
+  | stringToParserIsUnique h = stringToParserCaseUnique (h:t)
+  | isDigit h = stringToParserCaseDigit (h:t)
+  | otherwise = case runParser (parseSome (parseAnyChar stringList)) (h:t) of
+    Just (str, inp)   -> stringToParserAdd (ParserString str) inp
+    Nothing           -> Nothing
