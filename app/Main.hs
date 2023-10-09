@@ -28,7 +28,7 @@ readLines = do
     line <- getLine
     isEOF' <- isEOF
     if isEOF'
-        then return ""
+        then return line
         else do
             rest <- readLines
             return (line ++ "\n" ++ rest)
