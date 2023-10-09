@@ -37,9 +37,18 @@ import TestParser (
   testParseList,
   testStringToParser
   )
+import TestParserStatus
 
 main :: IO ()
 main = do
+  -- testParserStatus
+  putStrLn "Run test for isParserStatusOk"
+  _ <- runTestTT testIsParserStatusOk
+  putStrLn "Run test for isParserStatusError"
+  _ <- runTestTT testIsParserStatusError
+  putStrLn "Run test for interpretParserStatus"
+  _ <- runTestTT testInterpretParserStatus
+  --
   putStrLn "Run test for printTree"
   _ <- runTestTT printTreeTests
   putStrLn "Run test for EvalAdd"
