@@ -57,6 +57,8 @@ sexprToAstRecursive (SList (SSym func:args)) =
     Just astArgs -> Just (Call func astArgs)
     Nothing      -> Nothing
 sexprToAstRecursive (SInt n) = Just (Value (SInt n))
+sexprToAstRecursive (SSym "#t") = Just (Value (SBool True))
+sexprToAstRecursive (SSym "#f") = Just (Value (SBool False))
 sexprToAstRecursive (SSym s) = Just (Value (SSym s))
 sexprToAstRecursive _ = Nothing
 
