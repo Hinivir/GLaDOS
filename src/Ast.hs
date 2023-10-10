@@ -50,17 +50,27 @@ sexprToAst (SInt n) = Just (Value (SInt n))
 sexprToAst (SSym s) = Just (Value (SSym s))
 sexprToAst _ = Nothing
 
-sexprToAstRecursive :: SExpr -> Maybe Ast
-sexprToAstRecursive (SList [expr]) = sexprToAstRecursive expr
-sexprToAstRecursive (SList (SSym func:args)) =
-  case mapM sexprToAstRecursive args of
+
+
+--sexprToAst (SList [SSym "define", SSym var, expr]) =
+--  case sexprToAst expr of
+--    Just astExpr -> Just (Define var astExpr)
+--    Nothing      -> Nothing
+
+sexprToAstRecursive :: SExpr -> [(String, SExpr)] -> Maybe Ast
+sexprToAstRecursive (SList [SSym "define", SSym var, expr]) a =
+  sexprToAstRecursive expr ((var, expr):a)
+sexprToAstRecursive (SList [expr]) _ = sexprToAstRecursive expr []
+sexprToAstRecursive (SList (SSym func:args)) a =
+  case sequence (map (\arg -> sexprToAstRecursive arg a) args) of
     Just astArgs -> Just (Call func astArgs)
     Nothing      -> Nothing
-sexprToAstRecursive (SInt n) = Just (Value (SInt n))
-sexprToAstRecursive (SSym "#t") = Just (Value (SBool True))
-sexprToAstRecursive (SSym "#f") = Just (Value (SBool False))
-sexprToAstRecursive (SSym s) = Just (Value (SSym s))
-sexprToAstRecursive _ = Nothing
+sexprToAstRecursive (SInt n) _ = Just (Value (SInt n))
+sexprToAstRecursive (SSym "#t") _ = Just (Value (SBool True))
+sexprToAstRecursive (SSym "#f") _ = Just (Value (SBool False))
+sexprToAstRecursive (SSym s) _ = Just (Value (SSym s))
+sexprToAstRecursive _ _ = Nothing
+
 
 -- addition
 evalAdd :: Ast -> Ast -> Maybe Ast

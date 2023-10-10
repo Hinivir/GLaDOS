@@ -44,7 +44,7 @@ getResult _ = error "error while getting result"
 -- | Print "error while getting ast" if the SExpr is incorrect
 getAst :: SExpr -> IO ()
 getAst sexpr =
-  case sexprToAstRecursive sexpr of
+  case sexprToAstRecursive sexpr [] of
     Nothing -> errorExit "error while getting ast"
     Just ast     -> case evalAst ast of
       Nothing -> errorExit "error with eval"
