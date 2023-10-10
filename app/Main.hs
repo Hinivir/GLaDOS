@@ -9,12 +9,13 @@ module Main
   ( main
   ) where
 
-import Ast (sexprToAstRecursive, evalAst, Ast(..))
+import Ast (sexprToAst, evalAst, Ast(..))
 import Parser (ParserAny, stringToParser)
 import ParserToSExpr (parserToSExpr)
 import SExpr (SExpr(..))
 import System.Exit
 import System.IO
+import qualified Data.Map as Map
 
 -- | Function that take a String and print it
 -- | Print the String and exit with an error
@@ -44,11 +45,11 @@ getResult _ = error "error while getting result"
 -- | Print "error while getting ast" if the SExpr is incorrect
 getAst :: SExpr -> IO ()
 getAst sexpr =
-  case sexprToAstRecursive sexpr [] of
-    Nothing -> errorExit "error while getting ast"
-    Just ast     -> case evalAst ast of
+  case sexprToAst sexpr of
+    Left str -> errorExit str
+    Right ast -> case evalAst ast Map.empty of
       Nothing -> errorExit "error with eval"
-      Just str -> getResult str
+      Just (str, _) -> getResult str
 
 -- | Function that take a Maybe [ParserAny] and print it
 -- | Print the SExpr if the Maybe [ParserAny] is correct

@@ -4,16 +4,13 @@
 -- File description:
 -- Ast
 -}
-{-|
-Module      : Ast
-Description : Defines the Ast data type and provides functions to convert SExpr to Ast and evaluate Ast.
--}
+
 module Ast
   -- * Data Types
   ( Ast(..)
+  , Env
   -- * Functions
   , sexprToAst
-  , sexprToAstRecursive
   , evalAdd
   , evalSub
   , evalMul
@@ -22,55 +19,36 @@ module Ast
   , evalAst
   ) where
 
-import           SExpr (SExpr (..))
+import SExpr (SExpr (..))
 
--- | The Ast data type represents an abstract syntax tree.
+import qualified Data.Map as Map
+
 data Ast
-    -- | A definition of a variable with a value.
   = Define String Ast
-    -- | A function call with a function name and arguments.
   | Call String [Ast]
-    -- | A value represented by an SExpr.
   | Value SExpr
-  deriving (Show, Eq)
+  | Lambda ([Ast] -> Either String Ast)
 
--- | Converts an SExpr to an Ast.
---
--- Returns 'Nothing' if the SExpr cannot be converted to an Ast.
-sexprToAst :: SExpr -> Maybe Ast
-sexprToAst (SList [SSym "define", SSym var, expr]) =
-  case sexprToAst expr of
-    Just astExpr -> Just (Define var astExpr)
-    Nothing      -> Nothing
+type Env = Map.Map String Ast
+
+sexprToAst :: SExpr -> Either String Ast
+sexprToAst (SList [SSym "define", SSym var, expr]) = do
+  exprAst <- sexprToAst expr
+  Right (Define var exprAst)
+sexprToAst (SList [x]) = sexprToAst x
 sexprToAst (SList (SSym func:args)) =
   case mapM sexprToAst args of
-    Just astArgs -> Just (Call func astArgs)
-    Nothing      -> Nothing
-sexprToAst (SInt n) = Just (Value (SInt n))
-sexprToAst (SSym s) = Just (Value (SSym s))
-sexprToAst _ = Nothing
-
-
-
---sexprToAst (SList [SSym "define", SSym var, expr]) =
---  case sexprToAst expr of
---    Just astExpr -> Just (Define var astExpr)
---    Nothing      -> Nothing
-
-sexprToAstRecursive :: SExpr -> [(String, SExpr)] -> Maybe Ast
-sexprToAstRecursive (SList [SSym "define", SSym var, expr]) a =
-  sexprToAstRecursive expr ((var, expr):a)
-sexprToAstRecursive (SList [expr]) _ = sexprToAstRecursive expr []
-sexprToAstRecursive (SList (SSym func:args)) a =
-  case sequence (map (\arg -> sexprToAstRecursive arg a) args) of
-    Just astArgs -> Just (Call func astArgs)
-    Nothing      -> Nothing
-sexprToAstRecursive (SInt n) _ = Just (Value (SInt n))
-sexprToAstRecursive (SSym "#t") _ = Just (Value (SBool True))
-sexprToAstRecursive (SSym "#f") _ = Just (Value (SBool False))
-sexprToAstRecursive (SSym s) _ = Just (Value (SSym s))
-sexprToAstRecursive _ _ = Nothing
-
+    Left str   -> Left str
+    Right asts -> Right (Call func asts)
+sexprToAst (SInt x) = Right (Value (SInt x))
+sexprToAst (SBool x) = Right (Value (SBool x))
+sexprToAst (SSym "#t") = Right (Value (SBool True))
+sexprToAst (SSym "#f") = Right (Value (SBool False))
+sexprToAst (SSym x) = Right (Value (SSym x))
+sexprToAst (SList []) = Left "error empty list"
+sexprToAst (SList nestedExprs) = do
+  nestedAsts <- mapM sexprToAst nestedExprs
+  Right (Call "nested" nestedAsts)
 
 -- addition
 evalAdd :: Ast -> Ast -> Maybe Ast
@@ -99,41 +77,57 @@ evalMod (Value (SInt _)) (Value (SInt 0)) = Nothing
 evalMod (Value (SInt x)) (Value (SInt y)) = Just (Value (SInt (x `mod` y)))
 evalMod _ _                               = Nothing
 
-evalAst :: Ast -> Maybe Ast
-evalAst (Value v) = Just (Value v)
-evalAst (Define _ _) = Nothing
-evalAst (Call "+" [a, b]) = evalBinOp evalAdd a b
-evalAst (Call "-" [a, b]) = evalBinOp evalSub a b
-evalAst (Call "*" [a, b]) = evalBinOp evalMul a b
-evalAst (Call "div" [a, b]) = evalBinOp evalDiv a b
-evalAst (Call "mod" [a, b]) = evalBinOp evalMod a b
-evalAst (Call ">" [a, b])
-  | Just (Value (SInt x)) <- evalAst a
-  , Just (Value (SInt y)) <- evalAst b = Just (Value (SBool (x > y)))
-  | otherwise = Nothing
-evalAst (Call "<" [a, b])
-  | Just (Value (SInt x)) <- evalAst a
-  , Just (Value (SInt y)) <- evalAst b = Just (Value (SBool (x < y)))
-  | otherwise = Nothing
-evalAst (Call "eq?" [a, b])
-  | Just (Value (SInt x)) <- evalAst a
-  , Just (Value (SInt y)) <- evalAst b = Just (Value (SBool (x == y)))
-  | otherwise = Nothing
-evalAst (Call "if" [condExpr, trueExpr, falseExpr]) =
-  evalIf condExpr trueExpr falseExpr
-evalAst (Call _ _) = Nothing
+evalAst :: Ast -> Env -> Maybe (Ast, Env)
+evalAst (Value v) env = Just (Value v, env)
+evalAst (Define var expr) env = do
+  (exprValue, newEnv) <- evalAst expr env
+  Just (Define var exprValue, newEnv)
+evalAst (Call "+" [a, b]) env = evalBinOp evalAdd a b env
+evalAst (Call "-" [a, b]) env = evalBinOp evalSub a b env
+evalAst (Call "*" [a, b]) env = evalBinOp evalMul a b env
+evalAst (Call "div" [a, b]) env = evalBinOp evalDiv a b env
+evalAst (Call "mod" [a, b]) env = evalBinOp evalMod a b env
+evalAst (Call ">" [a, b]) env = evalComparison (>) a b env
+evalAst (Call "<" [a, b]) env = evalComparison (<) a b env
+evalAst (Call "eq?" [a, b]) env = evalComparison (==) a b env
+evalAst (Call "if" [condExpr, trueExpr, falseExpr]) env =
+  evalIf condExpr trueExpr falseExpr env
+evalAst (Lambda x) env = Just (Lambda x, env)
+evalAst (Call func args) env = do
+  funcAst <- lookupFunction func env
+  evalFunction funcAst args env
+  where
+    lookupFunction :: String -> Env -> Maybe Ast
+    lookupFunction func env = Map.lookup func env
 
-evalBinOp :: (Ast -> Ast -> Maybe Ast) -> Ast -> Ast -> Maybe Ast
-evalBinOp op a b
-  | Just x <- evalAst a
-  , Just y <- evalAst b = op x y
-  | otherwise = Nothing
+evalBinOp :: (Ast -> Ast -> Maybe Ast) -> Ast -> Ast -> Env -> Maybe (Ast, Env)
+evalBinOp op a b env = do
+  (aValue, env1) <- evalAst a env
+  (bValue, env2) <- evalAst b env1
+  result <- op aValue bValue
+  Just (result, env2)
 
-evalIf :: Ast -> Ast -> Ast -> Maybe Ast
-evalIf condExpr trueExpr falseExpr =
-  case (evalAst condExpr, evalAst trueExpr, evalAst falseExpr) of
-    (Just (Value (SBool condition)), Just x, Just y) ->
+evalComparison :: (Int -> Int -> Bool) -> Ast -> Ast -> Env -> Maybe (Ast, Env)
+evalComparison compOp a b env = do
+  (aValue, env1) <- evalAst a env
+  (bValue, env2) <- evalAst b env1
+  case (aValue, bValue) of
+    (Value (SInt x), Value (SInt y)) -> Just (Value (SBool (compOp x y)), env2)
+    _                                -> Nothing
+
+evalIf :: Ast -> Ast -> Ast -> Env -> Maybe (Ast, Env)
+evalIf condExpr trueExpr falseExpr env = do
+  (condValue, env1) <- evalAst condExpr env
+  case condValue of
+    Value (SBool condition) ->
       if condition
-        then Just x
-        else Just y
+        then evalAst trueExpr env1
+        else evalAst falseExpr env1
     _ -> Nothing
+
+evalFunction :: Ast -> [Ast] -> Env -> Maybe (Ast, Env)
+evalFunction (Lambda func) args env =
+  case func args of
+    Left errMsg  -> Nothing
+    Right result -> evalAst result env
+evalFunction _ _ _ = Nothing
