@@ -48,8 +48,8 @@ getAst sexpr =
   case sexprToAst sexpr of
     Left str -> errorExit str
     Right ast -> case evalAst ast Map.empty of
-      Nothing -> errorExit "error with eval"
-      Just (str, _) -> getResult str
+      Left error' -> errorExit error'
+      Right (str, _) -> getResult str
 
 -- | Function that take a Maybe [ParserAny] and print it
 -- | Print the SExpr if the Maybe [ParserAny] is correct
