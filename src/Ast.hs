@@ -63,77 +63,41 @@ sexprToAst (SList nestedExprs) = do
   nestedAsts <- mapM sexprToAst nestedExprs
   Right (Call "nested" nestedAsts)
 
--- addition
+-- Binary operation evaluator
+evalBinaryOp ::
+     (Int -> Int -> Int) -> Ast -> Ast -> Env -> Either String (Ast, Env)
+evalBinaryOp op a b env =
+  let Right (aValue, env1) = evalAst a env
+      Right (bValue, env2) = evalAst b env1
+  in case (aValue, bValue) of
+    (Value (SInt x), Value (SInt y)) -> Right (Value (SInt (x `op` y)), env2)
+    (Value (SSym symA), Value (SInt y)) ->
+      case lookupSymbol symA env2 of
+        Right (Value (SInt x)) -> Right (Value (SInt (x `op` y)), env2)
+        _              -> Left "Error: symbol value is not an integer"
+    _ -> Left "Error: invalid value types"
+
+-- Addition
 evalAdd :: Ast -> Ast -> Env -> Either String (Ast, Env)
-evalAdd a b env = do
-  (aValue, env1) <- evalAst a env
-  (bValue, env2) <- evalAst b env1
-  case (aValue, bValue) of
-    (Value (SInt x), Value (SInt y)) -> Right (Value (SInt (x + y)), env2)
-    (Value (SSym symA), Value (SInt y)) -> do
-      symbolValueA <- lookupSymbol symA env2
-      case symbolValueA of
-        Value (SInt x) -> Right (Value (SInt (x + y)), env2)
-        _              -> Left "Error addition: symbol value is not an integer"
-    _ -> Left "Error addition: invalid value types"
+evalAdd = evalBinaryOp (+)
 
--- soustraction
+-- Subtraction
 evalSub :: Ast -> Ast -> Env -> Either String (Ast, Env)
-evalSub a b env = do
-  (aValue, env1) <- evalAst a env
-  (bValue, env2) <- evalAst b env1
-  case (aValue, bValue) of
-    (Value (SInt x), Value (SInt y)) -> Right (Value (SInt (x - y)), env2)
-    (Value (SSym symA), Value (SInt y)) -> do
-      symbolValueA <- lookupSymbol symA env2
-      case symbolValueA of
-        Value (SInt x) -> Right (Value (SInt (x - y)), env2)
-        _ -> Left "Error subtraction: symbol value is not an integer"
-    _ -> Left "Error subtraction: invalid value types"
+evalSub = evalBinaryOp (-)
 
--- multiplication
+-- Multiplication
 evalMul :: Ast -> Ast -> Env -> Either String (Ast, Env)
-evalMul a b env = do
-  (aValue, env1) <- evalAst a env
-  (bValue, env2) <- evalAst b env1
-  case (aValue, bValue) of
-    (Value (SInt x), Value (SInt y)) -> Right (Value (SInt (x * y)), env2)
-    (Value (SSym symA), Value (SInt y)) -> do
-      symbolValueA <- lookupSymbol symA env2
-      case symbolValueA of
-        Value (SInt x) -> Right (Value (SInt (x * y)), env2)
-        _ -> Left "Error multiplication: symbol value is not an integer"
-    _ -> Left "Error multiplication: invalid value types"
+evalMul = evalBinaryOp (*)
 
--- division
+-- Division
 evalDiv :: Ast -> Ast -> Env -> Either String (Ast, Env)
-evalDiv a b env = do
-  (aValue, env1) <- evalAst a env
-  (bValue, env2) <- evalAst b env1
-  case (aValue, bValue) of
-    (Value (SInt _), Value (SInt 0)) -> Left "Error division by zero"
-    (Value (SInt x), Value (SInt y)) -> Right (Value (SInt (x `div` y)), env2)
-    (Value (SSym symA), Value (SInt y)) -> do
-      symbolValueA <- lookupSymbol symA env2
-      case symbolValueA of
-        Value (SInt x) -> Right (Value (SInt (x `div` y)), env2)
-        _              -> Left "Error division: symbol value is not an integer"
-    _ -> Left "Error division: invalid value types"
+evalDiv (Value (SInt _)) (Value (SInt 0)) _ = Left "Error division by zero"
+evalDiv a b env = evalBinaryOp div a b env
 
--- modulo
+-- Modulo
 evalMod :: Ast -> Ast -> Env -> Either String (Ast, Env)
-evalMod a b env = do
-  (aValue, env1) <- evalAst a env
-  (bValue, env2) <- evalAst b env1
-  case (aValue, bValue) of
-    (Value (SInt _), Value (SInt 0)) -> Left "Error modulo by zero"
-    (Value (SInt x), Value (SInt y)) -> Right (Value (SInt (x `mod` y)), env2)
-    (Value (SSym symA), Value (SInt y)) -> do
-      symbolValueA <- lookupSymbol symA env2
-      case symbolValueA of
-        Value (SInt x) -> Right (Value (SInt (x `mod` y)), env2)
-        _              -> Left "Error modulo: symbol value is not an integer"
-    _ -> Left "Error modulo: invalid value types"
+evalMod (Value (SInt _)) (Value (SInt 0)) _ = Left "Error modulo by zero"
+evalMod a b env = evalBinaryOp mod a b env
 
 evalAst :: Ast -> Env -> Either String (Ast, Env)
 evalAst (Value v) env = Right (Value v, env)
@@ -155,7 +119,7 @@ evalAst (Call "eq?" [a, b]) env = evalComparison (==) a b env
 evalAst (Call "if" [condExpr, trueExpr, falseExpr]) env =
   evalIf condExpr trueExpr falseExpr env
 evalAst (Call "nested" [Define var expr, expr2]) env = do
-  (exprValue, newEnv) <- evalAst expr env
+  (exprValue, _) <- evalAst expr env
   let updatedEnv = Map.insert var exprValue env
   evalAst expr2 updatedEnv
 evalAst _ _ = Left "error"
@@ -172,20 +136,24 @@ evalBinOp op a b env = do
   (result, env3) <- op aValue bValue env2
   Right (result, env3)
 
+compareValues ::
+     (Int -> Int -> Bool) -> Ast -> Ast -> Env -> Either String (Ast, Env)
+compareValues op aValue bValue env =
+  case (aValue, bValue) of
+    (Value (SInt x), Value (SInt y)) -> Right (Value (SBool (op x y)), env)
+    (Value (SSym symA), Value (SInt y)) -> do
+      symbolValueA <- lookupSymbol symA env
+      case symbolValueA of
+        Value (SInt x) -> Right (Value (SBool (op x y)), env)
+        _ -> Left "Error comparison: symbol value is not an integer"
+    _ -> Left "Error comparison: invalid value types"
 
 evalComparison ::
      (Int -> Int -> Bool) -> Ast -> Ast -> Env -> Either String (Ast, Env)
-evalComparison compOp a b env = do
+evalComparison op a b env = do
   (aValue, env1) <- evalAst a env
   (bValue, env2) <- evalAst b env1
-  case (aValue, bValue) of
-    (Value (SInt x), Value (SInt y)) -> Right (Value (SBool (compOp x y)), env2)
-    (Value (SSym symA), Value (SInt y)) -> do
-      symbolValueA <- lookupSymbol symA env2
-      case symbolValueA of
-        Value (SInt x) -> Right (Value (SBool (compOp x y)), env2)
-        _ -> Left "Error comparison: symbol value is not an integer"
-    _ -> Left "Error comparison: invalid value types"
+  compareValues op aValue bValue env2
 
 
 evalIf :: Ast -> Ast -> Ast -> Env -> Either String (Ast, Env)

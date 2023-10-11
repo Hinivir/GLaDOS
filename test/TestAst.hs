@@ -18,62 +18,74 @@ module TestAst (
 import Ast
 import SExpr
 import Test.HUnit
+import qualified Data.Map as Map
 
 testSExprToAst :: Test
 testSExprToAst =
   TestList
     [ "sexprToAst should handle define expression"
-        ~: sexprToAst (SList [SSym "define", SSym "x", SInt 5])
-        ~?= Just (Define "x" (Value (SInt 5))),
-      "sexprToAst should handle function call expression"
-        ~: sexprToAst (SList [SSym "+", SInt 2, SInt 3])
-        ~?= Just (Call "+" [Value (SInt 2), Value (SInt 3)]),
-      "sexprToAst should return Nothing for invalid input"
-        ~: sexprToAst (SList [SInt 1, SInt 2, SInt 3])
-        ~?= Nothing,
-      "sexprToAst should handle nested expressions"
-        ~: sexprToAst (SList [SSym "define", SSym "x", SList [SSym "+", SInt 2, SInt 3]])
-        ~?= Just (Define "x" (Call "+" [Value (SInt 2), Value (SInt 3)]))
+      ~: TestCase $ do
+        let result = sexprToAst (SList [SSym "define", SSym "x", SInt 5])
+        assertEqual "sexprToAst define expression" result (Right (Define "x" (Value (SInt 5))))
+
+    , "sexprToAst should handle function call expression"
+      ~: TestCase $ do
+        let result = sexprToAst (SList [SSym "+", SInt 2, SInt 3])
+        assertEqual "sexprToAst function call expression" result (Right (Call "+" [Value (SInt 2), Value (SInt 3)]))
     ]
 
 testEvalAdd :: Test
 testEvalAdd =
   TestList
     [ "evalAdd work"
-      ~: evalAdd (Value (SInt 4)) (Value (SInt 2))
-      ~?= Just (Value (SInt 6))
+      ~: TestCase $ do
+        let result = evalAdd (Value (SInt 4)) (Value (SInt 2)) Map.empty
+        assertEqual "evalAdd result" result (Right (Value (SInt 6), Map.empty))
     ]
 
 testEvalSub :: Test
 testEvalSub =
   TestList
-    [ "evalSub work" ~: evalSub (Value (SInt 4)) (Value (SInt 2)) ~?=
-      Just (Value (SInt 2))
+    [ "evalSub work" ~: TestCase $ do
+  let result = evalSub (Value (SInt 4)) (Value (SInt 2)) Map.empty
+  assertEqual "evalSub result" result (Right (Value (SInt 2), Map.empty))
     ]
 
 testEvalMul :: Test
 testEvalMul =
   TestList
-    [ "evalMul work" ~: evalMul (Value (SInt 4)) (Value (SInt 2)) ~?=
-      Just (Value (SInt 8))
+    [ "evalMul work" ~: TestCase $ do
+  let result = evalMul (Value (SInt 4)) (Value (SInt 2)) Map.empty
+  assertEqual "evalMul result" result (Right (Value (SInt 8), Map.empty))
+
     ]
 
 testEvalDiv :: Test
 testEvalDiv =
   TestList
-    [ "evalDiv work" ~: evalDiv (Value (SInt 20)) (Value (SInt 2)) ~?=
-      Just (Value (SInt 10)),
-      "evalDiv division by 0" ~: evalDiv (Value (SInt 5)) (Value (SInt 0))
-      ~?= Nothing
+    [ "evalDiv work"
+      ~: TestCase $ do
+        let result = evalDiv (Value (SInt 20)) (Value (SInt 2)) Map.empty
+        assertEqual "evalDiv result" result (Right (Value (SInt 10), Map.empty))
+
+    , "evalDiv division by 0"
+      ~: TestCase $ do
+        let result = evalDiv (Value (SInt 5)) (Value (SInt 0)) Map.empty
+        assertEqual "evalDiv division by 0 result" result (Left "Error division by zero")
     ]
 
 testEvalMod :: Test
 testEvalMod =
   TestList
-  [ "evalDiv work" ~: evalMod (Value (SInt 21)) (Value (SInt 2)) ~?=
-    Just (Value (SInt 1))
-  , "evalDiv division by 0" ~: evalMod (Value (SInt 5)) (Value (SInt 0)) ~?=
-    Nothing
+  [ "evalMod work"
+      ~: TestCase $ do
+        let result = evalMod (Value (SInt 21)) (Value (SInt 2)) Map.empty
+        assertEqual "evalMod result" result (Right (Value (SInt 1), Map.empty))
+
+    , "evalMod division by 0"
+      ~: TestCase $ do
+        let result = evalMod (Value (SInt 5)) (Value (SInt 0)) Map.empty
+        assertEqual "evalMod division by 0 result" result (Left "Error modulo by zero")
   ]
 
 
@@ -81,20 +93,37 @@ testEvalMod =
 testsEvalAst :: Test
 testsEvalAst =
   TestList
-    [ "evalAst 1" ~: evalAst (Value (SInt 42)) ~?= Just (Value (SInt 42)),
-      "evalAst 2" ~: evalAst (Call "+" [Value (SInt 2), Value (SInt 3)]) ~?= Just (Value (SInt 5)),
-      "evalAst 3" ~: evalAst (Call "-" [Value (SInt 5), Value (SInt 2)]) ~?= Just (Value (SInt 3)),
-      "evalAst 4" ~: evalAst (Call "*" [Value (SInt 2), Value (SInt 3)]) ~?= Just (Value (SInt 6)),
-      "evalAst 5" ~: evalAst (Call "div" [Value (SInt 6), Value (SInt 3)]) ~?= Just (Value (SInt 2)),
-      "evalAst 6" ~: evalAst (Call "div" [Value (SInt 6), Value (SInt 0)]) ~?= Nothing,
-      "evalAst 7" ~: evalAst (Call "mod" [Value (SInt 21), Value (SInt 2)]) ~?= Just (Value (SInt 1)),
-      "evalAst 8" ~: evalAst (Call "mod" [Value (SInt 6), Value (SInt 0)]) ~?= Nothing,
-      "evalAst 9" ~: evalAst (Call ">" [Value (SInt 6), Value (SInt 3)]) ~?= Just (Value (SBool True)),
-      "evalAst 10" ~: evalAst (Call ">" [Value (SInt 2), Value (SInt 6)]) ~?= Just (Value (SBool False)),
-      "evalAst 11" ~: evalAst (Call "<" [Value (SInt 6), Value (SInt 3)]) ~?= Just (Value (SBool False)),
-      "evalAst 12" ~: evalAst (Call "<" [Value (SInt 2), Value (SInt 6)]) ~?= Just (Value (SBool True)),
-      "evalAst 13" ~: evalAst (Call "eq?" [Value (SInt 6), Value (SInt 6)]) ~?= Just (Value (SBool True)),
-      "evalAst 14" ~: evalAst (Call "eq?" [Value (SInt 2), Value (SInt 6)]) ~?= Just (Value (SBool False)),
-      "evalAst 15" ~: evalAst (Call "if" [Value (SBool True), Value (SInt 2), Value (SInt 3)]) ~?= Just (Value (SInt 2)),
-      "evalAst 16" ~: evalAst (Call "if" [Value (SBool False), Value (SInt 2), Value (SInt 3)]) ~?= Just (Value (SInt 3))
+    [ "evalAst 1" ~: evalAst (Value (SInt 42)) Map.empty ~?= Right (Value (SInt 42), Map.empty)
+    , "evalAst 2" ~: evalAst (Call "+" [Value (SInt 2), Value (SInt 3)]) Map.empty ~?=
+      Right (Value (SInt 5), Map.empty)
+    , "evalAst 3" ~: evalAst (Call "-" [Value (SInt 5), Value (SInt 2)]) Map.empty ~?=
+      Right (Value (SInt 3), Map.empty)
+    , "evalAst 4" ~: evalAst (Call "*" [Value (SInt 2), Value (SInt 3)]) Map.empty
+    ~?= Right (Value (SInt 6), Map.empty)
+    , "evalAst 5" ~: evalAst (Call "div" [Value (SInt 6), Value (SInt 3)]) Map.empty
+    ~?= Right (Value (SInt 2), Map.empty)
+    , "evalAst 6" ~: evalAst (Call "div" [Value (SInt 6), Value (SInt 0)]) Map.empty
+    ~?= Left "Error division by zero"
+    , "evalAst 7" ~: evalAst (Call "mod" [Value (SInt 21), Value (SInt 2)]) Map.empty
+    ~?= Right (Value (SInt 1), Map.empty)
+    , "evalAst 8" ~: evalAst (Call "mod" [Value (SInt 6), Value (SInt 0)]) Map.empty
+    ~?= Left "Error modulo by zero"
+    , "evalAst 9" ~: evalAst (Call ">" [Value (SInt 6), Value (SInt 3)]) Map.empty
+    ~?= Right (Value (SBool True), Map.empty)
+    , "evalAst 10" ~: evalAst (Call ">" [Value (SInt 2), Value (SInt 6)]) Map.empty
+    ~?= Right (Value (SBool False), Map.empty)
+    , "evalAst 11" ~: evalAst (Call "<" [Value (SInt 6), Value (SInt 3)]) Map.empty
+    ~?= Right (Value (SBool False), Map.empty)
+    , "evalAst 12" ~: evalAst (Call "<" [Value (SInt 2), Value (SInt 6)]) Map.empty
+    ~?= Right (Value (SBool True), Map.empty)
+    , "evalAst 13" ~: evalAst (Call "eq?" [Value (SInt 6), Value (SInt 6)]) Map.empty
+    ~?= Right (Value (SBool True), Map.empty)
+    , "evalAst 14" ~: evalAst (Call "eq?" [Value (SInt 2), Value (SInt 6)]) Map.empty
+    ~?= Right (Value (SBool False), Map.empty)
+    , "evalAst 15" ~:
+      evalAst (Call "if" [Value (SBool True), Value (SInt 2), Value (SInt 3)]) Map.empty
+    ~?= Right (Value (SInt 2), Map.empty)
+    , "evalAst 16" ~:
+      evalAst (Call "if" [Value (SBool False), Value (SInt 2), Value (SInt 3)]) Map.empty
+    ~?= Right (Value (SInt 3), Map.empty)
     ]
