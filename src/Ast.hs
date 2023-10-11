@@ -5,113 +5,163 @@
 -- Ast
 -}
 
-{-|
-Module      : Ast
-Description : Defines the Ast data type and provides functions to convert SExpr to Ast and evaluate Ast.
--}
-module Ast (
+module Ast
   -- * Data Types
-  Ast (..),
+  ( Ast(..)
+  , Env
   -- * Functions
-  sexprToAst,
-  evalAdd,
-  evalSub,
-  evalMul,
-  evalDiv,
-  evalMod,
-  evalAst
-) where
+  , sexprToAst
+  , evalAdd
+  , evalSub
+  , evalMul
+  , evalDiv
+  , evalMod
+  , evalAst
+  ) where
 
 import SExpr (SExpr (..))
 
--- | The Ast data type represents an abstract syntax tree.
+import qualified Data.Map as Map
+
 data Ast
-  = -- | A definition of a variable with a value.
-    Define String Ast
-  | -- | A function call with a function name and arguments.
-    Call String [Ast]
-  | -- | A value represented by an SExpr.
-    Value SExpr
-  deriving (Show, Eq)
+  = Define String Ast
+  | Call String [Ast]
+  | Value SExpr
+  | Symbol String
+ deriving (Show, Eq)
 
--- | Converts an SExpr to an Ast.
---
--- Returns 'Nothing' if the SExpr cannot be converted to an Ast.
-sexprToAst :: SExpr -> Maybe Ast
-sexprToAst (SList [SSym "define", SSym var, expr])
-  | Just astExpr <- sexprToAst expr = Just (Define var astExpr)
-  | otherwise = Nothing
-sexprToAst (SList (SSym func : args))
-  | Just astArgs <- mapM sexprToAst args = Just (Call func astArgs)
-  | otherwise = Nothing
-sexprToAst (SInt n) = Just (Value (SInt n))
-sexprToAst (SSym s) = Just (Value (SSym s))
-sexprToAst _ = Nothing
+type Env = Map.Map String Ast
 
--- addition
-evalAdd :: Ast -> Ast -> Maybe Ast
-evalAdd (Value (SInt x)) (Value (SInt y)) = Just (Value (SInt (x + y)))
-evalAdd _ _ = Nothing
+tryReadVar :: String -> Env -> Either (Ast, Env) String
+tryReadVar key m =
+  case Map.lookup key m of
+    Nothing -> Right $ "Unknown symbol " ++ key
+    Just v  -> Left (v, m)
 
--- soustraction
-evalSub :: Ast -> Ast -> Maybe Ast
-evalSub (Value (SInt x)) (Value (SInt y)) = Just (Value (SInt (x - y)))
-evalSub _ _ = Nothing
+lookupSymbol :: String -> Env -> Either String Ast
+lookupSymbol symbol env =
+  case Map.lookup symbol env of
+    Just value -> Right value
+    Nothing    -> Left ("*** ERROR : variable "++ symbol ++" is not bound.")
 
--- multiplication
-evalMul :: Ast -> Ast -> Maybe Ast
-evalMul (Value (SInt x)) (Value (SInt y)) = Just (Value (SInt (x * y)))
-evalMul _ _ = Nothing
+sexprToAst :: SExpr -> Either String Ast
+sexprToAst (SList [SSym "define", SSym var, expr]) = do
+  exprAst <- sexprToAst expr
+  Right (Define var exprAst)
+sexprToAst (SList [x]) = sexprToAst x
+sexprToAst (SList (SSym func:args)) =
+  case mapM sexprToAst args of
+    Left str   -> Left str
+    Right asts -> Right (Call func asts)
+sexprToAst (SInt x) = Right (Value (SInt x))
+sexprToAst (SBool x) = Right (Value (SBool x))
+sexprToAst (SSym "#t") = Right (Value (SBool True))
+sexprToAst (SSym "#f") = Right (Value (SBool False))
+sexprToAst (SSym x) = Right (Value (SSym x))
+sexprToAst (SList []) = Left "error empty list"
+sexprToAst (SList nestedExprs) = do
+  nestedAsts <- mapM sexprToAst nestedExprs
+  Right (Call "nested" nestedAsts)
 
--- division
-evalDiv :: Ast -> Ast -> Maybe Ast
-evalDiv (Value (SInt _)) (Value (SInt 0)) = Nothing
-evalDiv (Value (SInt x)) (Value (SInt y)) = Just (Value (SInt (x `div` y)))
-evalDiv _ _ = Nothing
+-- Binary operation evaluator
+evalBinaryOp ::
+     (Int -> Int -> Int) -> Ast -> Ast -> Env -> Either String (Ast, Env)
+evalBinaryOp op a b env =
+  let Right (aValue, env1) = evalAst a env
+      Right (bValue, env2) = evalAst b env1
+  in case (aValue, bValue) of
+    (Value (SInt x), Value (SInt y)) -> Right (Value (SInt (x `op` y)), env2)
+    (Value (SSym symA), Value (SInt y)) ->
+      case lookupSymbol symA env2 of
+        Right (Value (SInt x)) -> Right (Value (SInt (x `op` y)), env2)
+        _              -> Left "Error: symbol value is not an integer"
+    _ -> Left "Error: invalid value types"
 
--- modulo
-evalMod :: Ast -> Ast -> Maybe Ast
-evalMod (Value (SInt _)) (Value (SInt 0)) = Nothing
-evalMod (Value (SInt x)) (Value (SInt y)) = Just (Value (SInt (x `mod` y)))
-evalMod _ _ = Nothing
+-- Addition
+evalAdd :: Ast -> Ast -> Env -> Either String (Ast, Env)
+evalAdd = evalBinaryOp (+)
 
-evalAst :: Ast -> Maybe Ast
-evalAst (Value v) = Just (Value v)
-evalAst (Define _ _) = Nothing
-evalAst (Call "+" [a, b]) = evalBinOp evalAdd a b
-evalAst (Call "-" [a, b]) = evalBinOp evalSub a b
-evalAst (Call "*" [a, b]) = evalBinOp evalMul a b
-evalAst (Call "div" [a, b]) = evalBinOp evalDiv a b
-evalAst (Call "mod" [a, b]) = evalBinOp evalMod a b
-evalAst (Call ">" [a, b])
-  | Just (Value (SInt x)) <- evalAst a
-  , Just (Value (SInt y)) <- evalAst b =
-    Just (Value (SBool (x > y)))
-  | otherwise = Nothing
-evalAst  (Call "<" [a, b])
-  | Just (Value (SInt x)) <- evalAst a
-  , Just (Value (SInt y)) <- evalAst b =
-    Just (Value (SBool (x < y)))
-  | otherwise = Nothing
-evalAst (Call "eq?" [a, b])
-  | Just (Value (SInt x)) <- evalAst a
-  , Just (Value (SInt y)) <- evalAst b =
-    Just (Value (SBool (x == y)))
-  | otherwise = Nothing
-evalAst (Call "if" [condExpr, trueExpr, falseExpr]) =
-  evalIf condExpr trueExpr falseExpr
-evalAst (Call _ _) = Nothing
+-- Subtraction
+evalSub :: Ast -> Ast -> Env -> Either String (Ast, Env)
+evalSub = evalBinaryOp (-)
 
-evalBinOp :: (Ast -> Ast -> Maybe Ast) -> Ast -> Ast -> Maybe Ast
-evalBinOp op a b
-  | Just x <- evalAst a, Just y <- evalAst b = op x y
-  | otherwise = Nothing
+-- Multiplication
+evalMul :: Ast -> Ast -> Env -> Either String (Ast, Env)
+evalMul = evalBinaryOp (*)
 
-evalIf :: Ast -> Ast -> Ast -> Maybe Ast
-evalIf condExpr trueExpr falseExpr =
-  case (evalAst condExpr, evalAst trueExpr, evalAst falseExpr) of
-    (Just (Value (SBool condition)), Just x, Just y) ->
+-- Division
+evalDiv :: Ast -> Ast -> Env -> Either String (Ast, Env)
+evalDiv (Value (SInt _)) (Value (SInt 0)) _ = Left "Error division by zero"
+evalDiv a b env = evalBinaryOp div a b env
+
+-- Modulo
+evalMod :: Ast -> Ast -> Env -> Either String (Ast, Env)
+evalMod (Value (SInt _)) (Value (SInt 0)) _ = Left "Error modulo by zero"
+evalMod a b env = evalBinaryOp mod a b env
+
+evalAst :: Ast -> Env -> Either String (Ast, Env)
+evalAst (Value v) env = Right (Value v, env)
+evalAst (Symbol var) env =
+  case tryReadVar var env of
+    Left (v, newEnv) -> Right (v, newEnv)
+    Right str -> Left str
+evalAst (Define var expr) env = do
+  (exprValue, newEnv) <- evalAst expr env
+  Right (Define var exprValue, newEnv)
+evalAst (Call "+" [a, b]) env = evalBinOp evalAdd a b env
+evalAst (Call "-" [a, b]) env = evalBinOp evalSub a b env
+evalAst (Call "*" [a, b]) env = evalBinOp evalMul a b env
+evalAst (Call "div" [a, b]) env = evalBinOp evalDiv a b env
+evalAst (Call "mod" [a, b]) env = evalBinOp evalMod a b env
+evalAst (Call ">" [a, b]) env = evalComparison (>) a b env
+evalAst (Call "<" [a, b]) env = evalComparison (<) a b env
+evalAst (Call "eq?" [a, b]) env = evalComparison (==) a b env
+evalAst (Call "if" [condExpr, trueExpr, falseExpr]) env =
+  evalIf condExpr trueExpr falseExpr env
+evalAst (Call "nested" [Define var expr, expr2]) env = do
+  (exprValue, _) <- evalAst expr env
+  let updatedEnv = Map.insert var exprValue env
+  evalAst expr2 updatedEnv
+evalAst _ _ = Left "error"
+
+evalBinOp ::
+     (Ast -> Ast -> Env -> Either String (Ast, Env))
+  -> Ast
+  -> Ast
+  -> Env
+  -> Either String (Ast, Env)
+evalBinOp op a b env = do
+  (aValue, env1) <- evalAst a env
+  (bValue, env2) <- evalAst b env1
+  (result, env3) <- op aValue bValue env2
+  Right (result, env3)
+
+compareValues ::
+     (Int -> Int -> Bool) -> Ast -> Ast -> Env -> Either String (Ast, Env)
+compareValues op aValue bValue env =
+  case (aValue, bValue) of
+    (Value (SInt x), Value (SInt y)) -> Right (Value (SBool (op x y)), env)
+    (Value (SSym symA), Value (SInt y)) -> do
+      symbolValueA <- lookupSymbol symA env
+      case symbolValueA of
+        Value (SInt x) -> Right (Value (SBool (op x y)), env)
+        _ -> Left "Error comparison: symbol value is not an integer"
+    _ -> Left "Error comparison: invalid value types"
+
+evalComparison ::
+     (Int -> Int -> Bool) -> Ast -> Ast -> Env -> Either String (Ast, Env)
+evalComparison op a b env = do
+  (aValue, env1) <- evalAst a env
+  (bValue, env2) <- evalAst b env1
+  compareValues op aValue bValue env2
+
+
+evalIf :: Ast -> Ast -> Ast -> Env -> Either String (Ast, Env)
+evalIf condExpr trueExpr falseExpr env = do
+  (condValue, env1) <- evalAst condExpr env
+  case condValue of
+    Value (SBool condition) ->
       if condition
-        then Just x
-        else Just y
-    _ -> Nothing
+        then evalAst trueExpr env1
+        else evalAst falseExpr env1
+    _ -> Left "error if"
