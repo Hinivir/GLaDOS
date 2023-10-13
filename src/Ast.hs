@@ -33,7 +33,7 @@ data Ast
 
 type Env = Map.Map String Ast
 
--- tryReadVar searches for a variable in the environment (Env). *
+-- | tryReadVar searches for a variable in the environment (Env). *
 -- If found, it returns a pair with the value and the original environment.
 -- If not found, it provides an error message for an unknown symbol, crucial for variable lookups in the environment.
 
@@ -43,7 +43,7 @@ tryReadVar key m =
     Nothing -> Right $ "Unknown symbol " ++ key
     Just v  -> Left (v, m)
 
--- lookupSymbol looks up a symbol in the environment (Env) and returns its associated Ast value.
+-- | lookupSymbol looks up a symbol in the environment (Env) and returns its associated Ast value.
 -- It's a key part of symbol resolution and allows the code to access values associated with symbols in the environment.
 
 lookupSymbol :: String -> Env -> Either String Ast
@@ -70,7 +70,7 @@ sexprToAst (SList nestedExprs) = do
   nestedAsts <- mapM sexprToAst nestedExprs
   Right (Call "nested" nestedAsts)
 
--- evalBinaryOp is a utility that supports binary operation evaluation (e.g., addition, subtraction) between two "Ast" values,
+-- | evalBinaryOp is a utility that supports binary operation evaluation (e.g., addition, subtraction) between two "Ast" values,
 -- accommodating various value types like integers and symbols, guaranteeing consistent binary operation behavior.
 
 evalBinaryOp ::
@@ -108,7 +108,7 @@ evalMod :: Ast -> Ast -> Env -> Either String (Ast, Env)
 evalMod (Value (SInt _)) (Value (SInt 0)) _ = Left "Error modulo by zero"
 evalMod a b env = evalBinaryOp mod a b env
 
--- evalAst handles nested scopes, allowing variable definition with "Define" and usage in "expr2," facilitating nested scopes and variable shadowing.
+-- | evalAst handles nested scopes, allowing variable definition with "Define" and usage in "expr2," facilitating nested scopes and variable shadowing.
 -- It's valuable for creating lexical scoping in the language.
 
 evalAst :: Ast -> Env -> Either String (Ast, Env)
@@ -136,7 +136,7 @@ evalAst (Call "nested" [Define var expr, expr2]) env = do
   evalAst expr2 updatedEnv
 evalAst _ _ = Left "error"
 
--- This is a versatile binary operation evaluator for addition, subtraction, multiplication, division, and modulo.
+-- | This is a versatile binary operation evaluator for addition, subtraction, multiplication, division, and modulo.
 -- It employs operation-specific evaluation functions (e.g., evalAdd, evalSub) to process operands, simplifying the handling of binary operations
 
 evalBinOp ::
@@ -151,7 +151,7 @@ evalBinOp op a b env = do
   (result, env3) <- op aValue bValue env2
   Right (result, env3)
 
--- compareValues compares two "Ast" values using a custom comparison function for integers.
+-- | compareValues compares two "Ast" values using a custom comparison function for integers.
 -- It's a modular way to handle comparisons like >, <, and eq?.
 
 compareValues ::
@@ -166,7 +166,7 @@ compareValues op aValue bValue env =
         _ -> Left "Error comparison: symbol value is not an integer"
     _ -> Left "Error comparison: invalid value types"
 
--- evalComparison provides a consistent way to evaluate comparison operations (e.g., >, <, eq?) on "Ast" values using the "compareValues" function.
+-- | evalComparison provides a consistent way to evaluate comparison operations (e.g., >, <, eq?) on "Ast" values using the "compareValues" function.
 -- It abstracts the comparison logic, promoting code consistency for various "Ast" types.
 
 evalComparison ::
@@ -176,7 +176,7 @@ evalComparison op a b env = do
   (bValue, env2) <- evalAst b env1
   compareValues op aValue bValue env2
 
--- evalIf handles conditional expressions using if. It evaluates the condition and, depending on whether it's true or false, evaluates either the true or false branches.
+-- | evalIf handles conditional expressions using if. It evaluates the condition and, depending on whether it's true or false, evaluates either the true or false branches.
 -- It's essential for controlling program flow and making decisions in the code.
 
 evalIf :: Ast -> Ast -> Ast -> Env -> Either String (Ast, Env)
