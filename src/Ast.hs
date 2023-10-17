@@ -80,18 +80,19 @@ data Ast
 -- a Ast for the value.
 type Env = Map.Map String Ast
 
--- | Try to read a variable from the environment.
--- | Return a string if there is an Unknown symbol.
--- | Return a list of Ast and the environment if the variable is found.
+-- | tryReadVar searches for a variable in the environment (Env). *
+-- If found, it returns a pair with the value and the original environment.
+-- If not found, it provides an error message for an unknown symbol, crucial for variable lookups in the environment.
+
 tryReadVar :: String -> Env -> Either (Ast, Env) String
 tryReadVar key m =
   case Map.lookup key m of
     Nothing -> Right $ "Unknown symbol " ++ key
     Just v  -> Left (v, m)
 
--- | Lookup a symbol in the environment.
--- | Return a string if there is an Unknown symbol.
--- | Return a Ast if the variable is found.
+-- | lookupSymbol looks up a symbol in the environment (Env) and returns its associated Ast value.
+-- It's a key part of symbol resolution and allows the code to access values associated with symbols in the environment.
+
 lookupSymbol :: String -> Env -> Either String Ast
 lookupSymbol symbol env =
   case Map.lookup symbol env of
@@ -102,8 +103,8 @@ lookupSymbol symbol env =
 -- | Return a string if there is an error.
 -- | Return a Ast if the conversion is successful.
 sexprToAst :: SExpr -> Either String Ast
-sexprToAst (SList [SSym "define", SSym var, SList[SSym a, SSym b]]) = do
-  Right (Define var (Call a [Symbol b]))
+sexprToAst (SList [SSym "define", SSym var, expr]) =
+  sexprToAst expr >>= \exprAst -> Right (Define var exprAst)
 sexprToAst (SList [x]) = sexprToAst x
 sexprToAst (SList (SSym func:args)) =
   case mapM sexprToAst args of
@@ -119,9 +120,9 @@ sexprToAst (SList nestedExprs) = do
   nestedAsts <- mapM sexprToAst nestedExprs
   Right (Call "nested" nestedAsts)
 
--- | Evaluate a binary operation.
--- | Return a string if there is an error.
--- | Return a Ast and the environment if the evaluation is successful.
+-- | evalBinaryOp is a utility that supports binary operation evaluation (e.g., addition, subtraction) between two "Ast" values,
+-- accommodating various value types like integers and symbols, guaranteeing consistent binary operation behavior.
+
 evalBinaryOp ::
      (Int -> Int -> Int) -> Ast -> Ast -> Env -> Either String (Ast, Env)
 evalBinaryOp op a b env =
@@ -167,9 +168,9 @@ evalMod :: Ast -> Ast -> Env -> Either String (Ast, Env)
 evalMod (Value (SInt _)) (Value (SInt 0)) _ = Left "Error modulo by zero"
 evalMod a b env = evalBinaryOp mod a b env
 
--- | Evaluate a Ast.
--- | Return a string if there is an error.
--- | Return a Ast and the environment if the evaluation is successful
+-- | evalAst handles nested scopes, allowing variable definition with "Define" and usage in "expr2," facilitating nested scopes and variable shadowing.
+-- It's valuable for creating lexical scoping in the language.
+
 evalAst :: Ast -> Env -> Either String (Ast, Env)
 evalAst (Value v) env = Right (Value v, env)
 evalAst (Symbol var) env =
@@ -195,9 +196,9 @@ evalAst (Call "nested" [Define var expr, expr2]) env = do
   evalAst expr2 updatedEnv
 evalAst _ _ = Left "error"
 
--- | Evaluate a binary operation.
--- | Return a string if there is an error.
--- | Return a Ast and the environment if the evaluation is successful.
+-- | This is a versatile binary operation evaluator for addition, subtraction, multiplication, division, and modulo.
+-- It employs operation-specific evaluation functions (e.g., evalAdd, evalSub) to process operands, simplifying the handling of binary operations
+
 evalBinOp ::
      (Ast -> Ast -> Env -> Either String (Ast, Env))
   -> Ast
@@ -210,9 +211,9 @@ evalBinOp op a b env = do
   (result, env3) <- op aValue bValue env2
   Right (result, env3)
 
--- | Compare two values.
--- | Return a string if there is an error.
--- | Return a Ast and the environment if the evaluation is successful.
+-- | compareValues compares two "Ast" values using a custom comparison function for integers.
+-- It's a modular way to handle comparisons like >, <, and eq?.
+
 compareValues ::
      (Int -> Int -> Bool) -> Ast -> Ast -> Env -> Either String (Ast, Env)
 compareValues op aValue bValue env =
@@ -225,9 +226,9 @@ compareValues op aValue bValue env =
         _ -> Left "Error comparison: symbol value is not an integer"
     _ -> Left "Error comparison: invalid value types"
 
--- | Evaluate a comparison.
--- | Return a string if there is an error.
--- | Return a Ast and the environment if the evaluation is successful.
+-- | evalComparison provides a consistent way to evaluate comparison operations (e.g., >, <, eq?) on "Ast" values using the "compareValues" function.
+-- It abstracts the comparison logic, promoting code consistency for various "Ast" types.
+
 evalComparison ::
      (Int -> Int -> Bool) -> Ast -> Ast -> Env -> Either String (Ast, Env)
 evalComparison op a b env = do
@@ -235,9 +236,9 @@ evalComparison op a b env = do
   (bValue, env2) <- evalAst b env1
   compareValues op aValue bValue env2
 
--- | Evaluate a if.
--- | Return a string if there is an error.
--- | Return a Ast and the environment if the evaluation is successful.
+-- | evalIf handles conditional expressions using if. It evaluates the condition and, depending on whether it's true or false, evaluates either the true or false branches.
+-- It's essential for controlling program flow and making decisions in the code.
+
 evalIf :: Ast -> Ast -> Ast -> Env -> Either String (Ast, Env)
 evalIf condExpr trueExpr falseExpr env = do
   (condValue, env1) <- evalAst condExpr env
