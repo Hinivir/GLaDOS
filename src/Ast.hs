@@ -5,6 +5,47 @@
 -- Ast
 -}
 
+{-|
+Module      : Ast
+Description : Abstract Syntax Tree (AST) Definition and Evaluation
+
+This module defines the abstract syntax tree (AST) data structure and provides functions for evaluating and manipulating it. The AST represents expressions, variables, and operations in a simple programming language.
+
+== Data Types
+
+- 'Ast': The primary data type representing nodes in the AST. It includes constructors for defining variables, calling functions, storing values, and working with symbols.
+
+- 'Env': An alias for a map that associates variable names with AST values.
+
+== Functions
+
+- 'sexprToAst': Converts an S-expression (a simple language representation) into an AST. It handles various S-expression forms and constructs the corresponding AST nodes.
+
+- 'evalAdd': Evaluates addition operations in the AST. It supports numeric values and symbolic variables.
+
+- 'evalSub': Evaluates subtraction operations in the AST. It supports numeric values and symbolic variables.
+
+- 'evalMul': Evaluates multiplication operations in the AST. It supports numeric values and symbolic variables.
+
+- 'evalDiv': Evaluates division operations in the AST. It supports numeric values and symbolic variables. It also handles division by zero errors.
+
+- 'evalMod': Evaluates modulo operations in the AST. It supports numeric values and symbolic variables. It also handles modulo by zero errors.
+
+- 'evalAst': Evaluates an entire AST. It handles various operations and expressions, variable lookups, and conditionals. It provides error handling for invalid operations and expressions.
+
+== Usage Example
+
+To use this module, you can define an AST and evaluate it as follows:
+
+1. Define an AST using 'Ast' constructors.
+
+2. Create an environment ('Env') that associates variable names with their values.
+
+3. Call 'evalAst' with your AST and the environment to evaluate it.
+
+-}
+
+
 module Ast
   -- * Data Types
   ( Ast(..)
@@ -23,14 +64,20 @@ import SExpr (SExpr (..))
 
 import qualified Data.Map as Map
 
+-- | The AST data type.
 data Ast
   = Define String Ast
+  -- | Define a variable
   | Call String [Ast]
+  -- | Call a function
   | Value SExpr
+  -- | A value
   | Symbol String
-  | Function String
+  -- | A symbol
  deriving (Show, Eq)
 
+-- | The environment data type that is Map containg in key a String and
+-- a Ast for the value.
 type Env = Map.Map String Ast
 
 -- | tryReadVar searches for a variable in the environment (Env). *
@@ -52,6 +99,9 @@ lookupSymbol symbol env =
     Just value -> Right value
     Nothing    -> Left ("*** ERROR : variable "++ symbol ++" is not bound.")
 
+-- | Convert a SExpr to a Ast.
+-- | Return a string if there is an error.
+-- | Return a Ast if the conversion is successful.
 sexprToAst :: SExpr -> Either String Ast
 sexprToAst (SList [SSym "define", SSym var, expr]) =
   sexprToAst expr >>= \exprAst -> Right (Define var exprAst)
@@ -86,24 +136,34 @@ evalBinaryOp op a b env =
         _              -> Left "Error: symbol value is not an integer"
     _ -> Left "Error: invalid value types"
 
--- Addition
+-- | Handle the evaluation of an addition.
+-- | Return a string if there is an error.
+-- | Return a Ast and the environment if the evaluation is successful
 evalAdd :: Ast -> Ast -> Env -> Either String (Ast, Env)
 evalAdd = evalBinaryOp (+)
 
--- Subtraction
+-- | Handle the evaluation of a subtraction.
+-- | Return a string if there is an error.
+-- | Return a Ast and the environment if the evaluation is successful
 evalSub :: Ast -> Ast -> Env -> Either String (Ast, Env)
 evalSub = evalBinaryOp (-)
 
--- Multiplication
+-- | Handle the evaluation of a multiplication.
+-- | Return a string if there is an error.
+-- | Return a Ast and the environment if the evaluation is successful
 evalMul :: Ast -> Ast -> Env -> Either String (Ast, Env)
 evalMul = evalBinaryOp (*)
 
--- Division
+-- | Handle the evaluation of a division.
+-- | Return a string if there is an error.
+-- | Return a Ast and the environment if the evaluation is successful
 evalDiv :: Ast -> Ast -> Env -> Either String (Ast, Env)
 evalDiv (Value (SInt _)) (Value (SInt 0)) _ = Left "Error division by zero"
 evalDiv a b env = evalBinaryOp div a b env
 
--- Modulo
+-- | Handle the evaluation of a modulo.
+-- | Return a string if there is an error.
+-- | Return a Ast and the environment if the evaluation is successful
 evalMod :: Ast -> Ast -> Env -> Either String (Ast, Env)
 evalMod (Value (SInt _)) (Value (SInt 0)) _ = Left "Error modulo by zero"
 evalMod a b env = evalBinaryOp mod a b env
