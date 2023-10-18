@@ -63,11 +63,16 @@ module Ast
 import SExpr (SExpr (..))
 
 import qualified Data.Map as Map
+import GHC.IO.Device (SeekMode)
+import Data.Ratio (Ratio)
+import Control.Exception (ArithException(RatioZeroDenominator))
 
 -- | The AST data type.
 data Ast
   = Define String Ast
   -- | Define a variable
+  | DefineFunction String [String] Ast
+  -- | Define a function variable
   | Call String [Ast]
   -- | Call a function
   | Value SExpr
@@ -99,12 +104,25 @@ lookupSymbol symbol env =
     Just value -> Right value
     Nothing    -> Left ("*** ERROR : variable "++ symbol ++" is not bound.")
 
+sexprToAstFunctionArguments :: [SExpr] -> Either String [String]
+sexprToAstFunctionArguments [] = Right []
+sexprToAstFunctionArguments ((SSym arg):t) =
+  case sexprToAstFunctionArguments t of
+    Left err    -> Left err
+    Right rest  -> Right (arg:rest)
+sexprToAstFunctionArguments (_:_) = Left "*** ERROR : (sexprToAstFunctionArguments)."
+
 -- | Convert a SExpr to a Ast.
 -- | Return a string if there is an error.
 -- | Return a Ast if the conversion is successful.
 sexprToAst :: SExpr -> Either String Ast
 sexprToAst (SList [SSym "define", SSym var, expr]) =
   sexprToAst expr >>= \exprAst -> Right (Define var exprAst)
+sexprToAst (SList [SSym "define", SList ((SSym var):args), expr]) =
+  sexprToAst expr >>= \exprAst ->
+    case sexprToAstFunctionArguments args of
+      Left err    -> Left err
+      Right args2 -> Right (DefineFunction var args2 exprAst)
 sexprToAst (SList [x]) = sexprToAst x
 sexprToAst (SList (SSym func:args)) =
   case mapM sexprToAst args of
