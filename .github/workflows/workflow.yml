@@ -68,6 +68,19 @@ jobs:
       - name: Run test haskell with stack
         run: stack test --coverage
 
+  deploy:
+    name: Deploy the release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy realese
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "glados"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: true
+          draft: false
+          tag: ${{ github.ref }}
+
   push_to_mirror:
     name: Push to Epitech repository
     runs-on: ubuntu-latest
