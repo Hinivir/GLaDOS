@@ -77,6 +77,8 @@ jobs:
     name: Create Github Release
     runs-on: ubuntu-latest
     needs: [ check_coding_style, check_compile, check_unit_test ]
+    permissions:
+      contents: write
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
