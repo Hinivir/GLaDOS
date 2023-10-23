@@ -80,7 +80,7 @@ data Ast
 -- | The environment data type that is Map containg in key a String and
 -- a Ast for the value.
 type Var = (String, Ast)
-type Func = (String, [Ast], [Ast])
+type Func = (String, [String], Ast)
 type Env = Map.Map String (Either Var Func)
 
 -- | tryReadVar searches for a variable in the environment (Env). *
@@ -100,8 +100,8 @@ lookupSymbol :: String -> Env -> Either String Ast
 lookupSymbol symbol env =
   case Map.lookup symbol env of
     Just (Left (_, value)) -> Right value
-    Just (Right _)    -> Left ("*** ERROR: Variable " ++ symbol ++ " is not bound.")
-    Nothing           -> Left ("*** ERROR: Variable " ++ symbol ++ " is not bound.")
+    Just (Right _) -> Left ("*** ERROR: Variable " ++ symbol ++ " not bound")
+    Nothing        -> Left ("*** ERROR: Variable " ++ symbol ++ " not bound")
 
 -- Function to convert a list of SExpr into a list of strings
 sexprToAstFunctionArguments :: [SExpr] -> Either String [String]
@@ -110,17 +110,13 @@ sexprToAstFunctionArguments (SSym arg : t) =
   case sexprToAstFunctionArguments t of
     Left err -> Left err
     Right rest -> Right (arg : rest)
-sexprToAstFunctionArguments _ = Left "*** ERROR : (sexprToAstFunctionArguments)."
+sexprToAstFunctionArguments _ =
+  Left "*** ERROR : (sexprToAstFunctionArguments)"
 
 -- Function to convert a SExpr to an Ast
 sexprToAst :: SExpr -> Either String Ast
 sexprToAst (SList [SSym "define", SSym var, expr]) =
   sexprToAst expr >>= \exprAst -> Right (Define var exprAst)
-sexprToAst (SList [SSym "define", SList (SSym var : args), expr]) =
-  sexprToAst expr >>= \exprAst ->
-    case sexprToAstFunctionArguments args of
-      Left err -> Left err
-      Right args2 -> Right (DefineFunction var args2 exprAst)
 sexprToAst (SList [x]) = sexprToAst x
 sexprToAst (SList (SSym func : args)) =
   case mapM sexprToAst args of
@@ -181,6 +177,7 @@ evalAst (Symbol var) env =
 evalAst (Define var expr) env = do
   (exprValue, newEnv) <- evalAst expr env
   Right (Define var exprValue, Map.insert var (Left (var, exprValue)) newEnv)
+evalAst (Call name args) env = evalFunction (Call name args) env
 evalAst (Call "+" [a, b]) env = evalAdd a b env
 evalAst (Call "-" [a, b]) env = evalSub a b env
 evalAst (Call "*" [a, b]) env = evalMul a b env
@@ -189,12 +186,28 @@ evalAst (Call "mod" [a, b]) env = evalMod a b env
 evalAst (Call ">" [a, b]) env = evalComparison (>) a b env
 evalAst (Call "<" [a, b]) env = evalComparison (<) a b env
 evalAst (Call "eq?" [a, b]) env = evalComparison (==) a b env
-evalAst (Call "if" [condExpr, trueExpr, falseExpr]) env = evalIf condExpr trueExpr falseExpr env
+evalAst (Call "if" [condExpr, trueExpr, falseExpr]) env =
+  evalIf condExpr trueExpr falseExpr env
 evalAst (Call "nested" [Define var expr, expr2]) env = do
   (exprValue, _) <- evalAst expr env
   let updatedEnv = Map.insert var (Left (var, exprValue)) env
   evalAst expr2 updatedEnv
-evalAst _ _ = Left "error"
+evalAst (Call "nested" [DefineFunction name args ins, expr2]) env = do
+  let updatedEnv = Map.insert name (Right (name, args, ins)) env
+  evalAst expr2 updatedEnv
+evalAst _ _ = Left "error while evaluating ast"
+
+evalFunction :: Ast -> Env -> Either String (Ast, Env)
+evalFunction (Call name args) env =
+  case Map.lookup name env of
+    Just (Right (_, funcArgs, funcIns)) ->
+      if length args == length funcArgs
+        then do
+          let updatedEnv = Map.insert name (Right (name, funcArgs, funcIns)) env
+          let updatedEnv2 = foldl (\acc (arg, value) -> Map.insert arg (Left (arg, value)) acc) updatedEnv (zip funcArgs args)
+          evalAst funcIns updatedEnv2
+        else Left "Error: wrong number of arguments"
+    _ -> Left "Error: function not found"
 
 -- Function to evaluate binary operations
 evalBinOp ::
