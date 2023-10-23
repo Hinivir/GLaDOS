@@ -110,7 +110,7 @@ listNumDigits = ['0'..'9']
 
 --
 listNumStart :: [Char]
-listNumStart = listNumDigits
+listNumStart = listNumDigits ++ listNumSigns
 
 --
 listSymbolsStart :: [Char]

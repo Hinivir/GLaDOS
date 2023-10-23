@@ -32,11 +32,14 @@ import Parsing.Tokenizer.Status (
   listLiteral,
   listNumStart,
   listSymbolsStart,
-  listSymbols,
   listUnique,
   shiftedTokenizerIn,
   signTokenized,
   tokenize
+  )
+
+import Parsing.Tokenizer.ListOfString.Int (
+  tokenizeInt
   )
 
 import Parsing.Tokenizer.ListOfString.String (
@@ -101,8 +104,8 @@ tokenizeAnyOtherwise input c
     createTokenizerOutOK TokenizedUndefined input
   | otherwise                   =
     createTokenizerOutError input ("Unreconized Symbol '" ++ [c] ++ "'")
-      ("(tokenizeAny) Is not part of listUnique, listLiteral, listSymbols " ++
-      "nor listEmpty")
+      ("(tokenizeAny) Is not part of listUnique, listLiteral, listNumStart," ++
+      " listSymbolsStart nor listEmpty")
 
 --
 tokenizeAnySeg :: TokenizerIn -> Char -> TokenizerOut
@@ -110,7 +113,7 @@ tokenizeAnySeg input c
   | hasTokenizerInEnded input   = createTokenizerOutOK TokenizedUndefined input
   | c `elem` listUnique         = input `tokenize` tokenizeUnique
   | c `elem` listLiteral        = input `tokenize` tokenizeLiteral
-  | c `elem` listNumStart       = input `tokenize` tokenizeString
+  | c `elem` listNumStart       = input `tokenize` tokenizeInt
   | c `elem` listSymbolsStart   = input `tokenize` tokenizeString
   | c `elem` listEmpty          =
     (shiftedTokenizerIn input) `tokenize` tokenizeAny
