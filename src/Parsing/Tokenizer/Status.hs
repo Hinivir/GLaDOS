@@ -113,6 +113,9 @@ listNumStart :: [Char]
 listNumStart = listNumDigits ++ listNumSigns
 
 --
+--listNumDigits :: [Char]
+
+--
 listSymbolsStart :: [Char]
 listSymbolsStart = ['a'..'z'] ++ ['A'..'Z'] ++ "+-*/%<>=?!#."
 

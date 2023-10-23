@@ -24,6 +24,7 @@ import Parsing.Tokenizer.Status (
   headTokenizerIn,
   headOfShiftedTokenizerIn,
   listSymbols,
+  listSymbolsStart,
   listNumDigits,
   shiftedTokenizerIn,
   signTokenized,
@@ -32,6 +33,10 @@ import Parsing.Tokenizer.Status (
 
 import Parsing.Tokenizer (
   TokenizedAny(TokenizedString, TokenizedInt)
+  )
+
+import Parsing.Tokenizer.ListOfString.String (
+  tokenizeString
   )
 
 --
@@ -47,13 +52,27 @@ charToInt '8' = 8
 charToInt '9' = 9
 charToInt _ = 0
 
+tokenizeUIntSegChainOnError :: TokenizerIn -> Char -> (TokenizerOut, Int) ->
+  (TokenizerOut, Int)
+tokenizeUIntSegChainOnError input c (((TokenizedInt x _), input2, _), _)
+  | (headOfShiftedTokenizerIn input) `elem` listSymbols =
+    (createTokenizerOutError (shiftedTokenizerIn input)
+      ("Unreconized Symbol '" ++ [headOfShiftedTokenizerIn input] ++ "'")
+      "(tokenizeInt) Is part of listSymbols", 0)
+  | otherwise                                           =
+    (createTokenizerOutOKForce
+      (TokenizedInt (charToInt c) (signTokenized input)) input2, 10)
+tokenizeUIntSegChainOnError input c ((_, input2, _), _) =
+    (createTokenizerOutOKForce
+      (TokenizedInt (charToInt c) (signTokenized input)) input2, 10)
+
 --
 tokenizeUIntSegChain :: TokenizerIn -> Char -> (TokenizerOut, Int) ->
   (TokenizerOut, Int)
-tokenizeUIntSegChain input c (((TokenizedInt x _), input2, status), tilt)
+tokenizeUIntSegChain input c (((TokenizedInt x coor), input2, status), tilt)
   | isParserStatusError status  =
-    (createTokenizerOutOKForce
-      (TokenizedInt (charToInt c) (signTokenized input)) input2, 10)
+    tokenizeUIntSegChainOnError input c
+      (((TokenizedInt x coor), input2, status), tilt)
   | otherwise                   =
     (createTokenizerOutOKForce
       (TokenizedInt ((charToInt c) * tilt + x) (signTokenized input)) input2,
@@ -96,4 +115,9 @@ tokenizeIntSeg input c
 -- | Handles regular strings, like symbols or simple keywords
 tokenizeInt :: Tokenizer
 tokenizeInt = Tokenizer $ \input ->
-  tokenizeIntSeg input (headTokenizerIn input)
+  case tokenizeIntSeg input (headTokenizerIn input) of
+    (x, input2, status)
+      | (isParserStatusError status) &&
+        (headTokenizerIn input) `elem` listSymbolsStart ->
+          input `tokenize` tokenizeString
+      | otherwise ->  (x, input2, status)
