@@ -9,7 +9,7 @@ module Parsing.Tokenizer (
   TokenizedAny(..)
 ) where
 
--- TOKENIZED --
+-- TOKENIZER --
 
 --
 data TokenizedAny = TokenizedUndefined
@@ -18,4 +18,5 @@ data TokenizedAny = TokenizedUndefined
   | TokenizedFloat Float (Int, Int)
   | TokenizedString String (Int, Int)
   | TokenizedLiteral String (Int, Int)
+  | TokenizedList Char [TokenizedAny] (Int, Int)
   deriving (Eq, Show)

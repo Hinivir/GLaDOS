@@ -16,6 +16,7 @@ module Parsing.Tokenizer.Status (
   hasTokenizerInEnded,
   headOfShiftedTokenizerIn,
   headTokenizerIn,
+  isUniquePair,
   listEmpty,
   listLiteral,
   listNumSigns,
@@ -24,6 +25,9 @@ module Parsing.Tokenizer.Status (
   listSymbolsStart,
   listSymbols,
   listUnique,
+  listUniquePair,
+  listUniquePairEnd,
+  listUniquePairStart,
   shiftedTokenizerIn,
   signTokenized,
   tokenize
@@ -113,9 +117,6 @@ listNumStart :: [Char]
 listNumStart = listNumDigits ++ listNumSigns
 
 --
---listNumDigits :: [Char]
-
---
 listSymbolsStart :: [Char]
 listSymbolsStart = ['a'..'z'] ++ ['A'..'Z'] ++ "+-*/%<>=?!#."
 
@@ -124,8 +125,20 @@ listSymbols :: [Char]
 listSymbols = listSymbolsStart ++ ['0'..'9']
 
 --
+listUniquePairEnd :: [Char]
+listUniquePairEnd = ")]}"
+
+--
+listUniquePairStart :: [Char]
+listUniquePairStart = "([{"
+
+--
+listUniquePair :: [Char]
+listUniquePair = listUniquePairStart ++ listUniquePairEnd
+
+--
 listUnique :: [Char]
-listUnique = "()[]{},"
+listUnique = listUniquePair ++ ","
 
 --
 listEmpty :: [Char]
@@ -134,3 +147,10 @@ listEmpty = " \t\n"
 --
 listLiteral :: [Char]
 listLiteral = "\"\'"
+
+--
+isUniquePair :: Char -> Char -> Bool
+isUniquePair '(' ')' = True
+isUniquePair '[' ']' = True
+isUniquePair '{' '}' = True
+isUniquePair _ _ = False
