@@ -125,7 +125,7 @@ listSymbols = listSymbolsStart ++ ['0'..'9']
 
 --
 listUnique :: [Char]
-listUnique = "(),"
+listUnique = "()[]{},"
 
 --
 listEmpty :: [Char]
