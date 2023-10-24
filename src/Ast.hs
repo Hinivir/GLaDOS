@@ -79,9 +79,14 @@ data Ast
 
 -- | The environment data type that is Map containg in key a String and
 -- a Ast for the value.
-type Var = (String, Ast)
-type Func = (String, [String], Ast)
-type Env = Map.Map String (Either Var Func)
+type Func = ([String], Ast)
+
+data EnvVar =
+  Var Ast
+  | Function Func
+  deriving (Show, Eq)
+
+type Env = Map.Map String (EnvVar)
 
 -- | tryReadVar searches for a variable in the environment (Env). *
 -- If found, it returns a pair with the value and the original environment.
@@ -96,12 +101,12 @@ tryReadVar key m =
     Just (Right _) -> Right $ "*** ERROR: Variable " ++ key ++ " is not bound."
 
 -- Redefine the lookupSymbol function to handle the new Env type
-lookupSymbol :: String -> Env -> Either String Ast
-lookupSymbol symbol env =
-  case Map.lookup symbol env of
-    Just (Left (_, value)) -> Right value
-    Just (Right _) -> Left ("*** ERROR: Variable " ++ symbol ++ " not bound")
-    Nothing        -> Left ("*** ERROR: Variable " ++ symbol ++ " not bound")
+--lookupSymbol :: String -> Env -> Either String Ast
+--lookupSymbol symbol env =
+--  case Map.lookup symbol env of
+--    Just (Left (_, value)) -> Right value
+--    Just (Right _) -> Left ("*** ERROR: Variable " ++ symbol ++ " not bound")
+--    Nothing        -> Left ("*** ERROR: Variable " ++ symbol ++ " not bound")
 
 -- Function to convert a list of SExpr into a list of strings
 sexprToAstFunctionArguments :: [SExpr] -> Either String [String]
@@ -175,13 +180,13 @@ evalMod a b env = evalBinaryOp mod a b env
 -- Function to evaluate an Ast
 evalAst :: Ast -> Env -> Either String (Ast, Env)
 evalAst (Value v) env = Right (Value v, env)
-evalAst (Symbol var) env =
-  case tryReadVar var env of
-    Left (v, newEnv) -> Right (v, newEnv)
-    Right str -> Left str
-evalAst (Define var expr) env = do
-  (exprValue, newEnv) <- evalAst expr env
-  Right (Define var exprValue, Map.insert var (Left (var, exprValue)) newEnv)
+--evalAst (Symbol var) env =
+--  case tryReadVar var env of
+--    Left (v, newEnv) -> Right (v, newEnv)
+--    Right str -> Left str
+--evalAst (Define var expr) env = do
+--  (exprValue, newEnv) <- evalAst expr env
+--  Right (Define var exprValue, Map.insert var (Left (var, exprValue)) newEnv)
 evalAst (Call "+" [a, b]) env = evalAdd a b env
 evalAst (Call "-" [a, b]) env = evalSub a b env
 evalAst (Call "*" [a, b]) env = evalMul a b env
@@ -192,27 +197,14 @@ evalAst (Call "<" [a, b]) env = evalComparison (<) a b env
 evalAst (Call "eq?" [a, b]) env = evalComparison (==) a b env
 evalAst (Call "if" [condExpr, trueExpr, falseExpr]) env =
   evalIf condExpr trueExpr falseExpr env
-evalAst (Call "nested" [Define var expr, expr2]) env = do
-  (exprValue, _) <- evalAst expr env
-  let updatedEnv = Map.insert var (Left (var, exprValue)) env
-  evalAst expr2 updatedEnv
-evalAst (Call "nested" [DefineFunction name args ins, expr2]) env = do
-  let updatedEnv = Map.insert name (Right (name, args, ins)) env
-  evalAst expr2 updatedEnv
-evalAst (Call name args) env = evalFunction (Call name args) env
+--evalAst (Call "nested" [Define var expr, expr2]) env = do
+--  (exprValue, _) <- evalAst expr env
+--  let updatedEnv = Map.insert var (Left (var, exprValue)) env
+--  evalAst expr2 updatedEnv
+--evalAst (Call "nested" [DefineFunction name args ins, expr2]) env = do
+--  let updatedEnv = Map.insert name (Right (name, args, ins)) env
+--  evalAst expr2 updatedEnv
 evalAst _ _ = Left "error while evaluating ast"
-
-evalFunction :: Ast -> Env -> Either String (Ast, Env)
-evalFunction (Call name args) env =
-  case Map.lookup name env of
-    Just (Right (_, funcArgs, funcIns)) ->
-      if length args == length funcArgs
-        then do
-          let updatedEnv = Map.insert name (Right (name, funcArgs, funcIns)) env
-          let updatedEnv2 = foldl (\acc (arg, value) -> Map.insert arg (Left (arg, value)) acc) updatedEnv (zip funcArgs args)
-          evalAst funcIns updatedEnv2
-        else Left "Error: wrong number of arguments"
-    _ -> Left "Error: function not found"
 
 -- Function to compare values
 compareValues ::
