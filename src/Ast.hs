@@ -103,10 +103,24 @@ lookupSymbol symbol env =
     Just (Right _) -> Left ("*** ERROR: Variable " ++ symbol ++ " not bound")
     Nothing        -> Left ("*** ERROR: Variable " ++ symbol ++ " not bound")
 
+-- Function to convert a list of SExpr into a list of strings
+sexprToAstFunctionArguments :: [SExpr] -> Either String [String]
+sexprToAstFunctionArguments [] = Right []
+sexprToAstFunctionArguments (SSym arg : t) =
+  case sexprToAstFunctionArguments t of
+    Left err -> Left err
+    Right rest -> Right (arg : rest)
+sexprToAstFunctionArguments _ = Left "*** ERROR : (sexprToAstFunctionArguments)."
+
 -- Function to convert a SExpr to an Ast
 sexprToAst :: SExpr -> Either String Ast
 sexprToAst (SList [SSym "define", SSym var, expr]) =
   sexprToAst expr >>= \exprAst -> Right (Define var exprAst)
+sexprToAst (SList [SSym "define", SList (SSym var : args), expr]) =
+  sexprToAst expr >>= \exprAst ->
+    case sexprToAstFunctionArguments args of
+      Left err -> Left err
+      Right args2 -> Right (DefineFunction var args2 exprAst)
 sexprToAst (SList [x]) = sexprToAst x
 sexprToAst (SList (SSym func : args)) =
   case mapM sexprToAst args of
@@ -121,6 +135,7 @@ sexprToAst (SList []) = Left "error empty list"
 sexprToAst (SList nestedExprs) = do
   nestedAsts <- mapM sexprToAst nestedExprs
   Right (Call "nested" nestedAsts)
+
 
 -- Function to evaluate binary operations
 evalBinaryOp ::
