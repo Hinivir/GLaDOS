@@ -87,22 +87,6 @@ tokenizeListToTreeIn (h:t) sep = case sep of
   _                         -> tokenizeListToTreeInSeg (h:t) sep
 
 --
---tokenizeListToTreeSeg :: [TokenizedAny] -> Maybe [TokenizedAny] ->
---  ParserStatus -> (Maybe [TokenizedAny], ParserStatus)
---tokenizeListToTreeSeg (h:t) output status = case output of
---  Just t2 -> case h of
---    TokenizedChar c (ln, col)
---      | c `elem` listUniquePairStart  ->  tokenizeListToTreeIn t2 h
---      | c `elem` listUniquePairEnd    ->
---        (Just (h:t2), createParserStatusError ("Unopened closing '" ++ [c] ++
---          "'") "" ln col)
---      | otherwise                     ->
---        (Just (h:t2), createParserStatusOk)
---    _     ->
---      (Just (h:t2), createParserStatusOk)
---  Nothing -> (Nothing, createParserStatusOk)
-
---
 tokenizeListToTree :: [TokenizedAny] -> (Maybe [TokenizedAny], ParserStatus)
 tokenizeListToTree [] = (Just [], createParserStatusOk)
 tokenizeListToTree input = case tokenizeListToTreeIn input Nothing of
