@@ -47,7 +47,9 @@ getAst :: SExpr -> IO ()
 getAst sexpr =
   case sexprToAst sexpr of
     Left str -> errorExit str
-    Right ast -> print ast
+    Right ast -> case evalAst ast Map.empty of
+      Left str -> errorExit str
+      Right (ast', _) -> getResult ast'
 
 -- | Function that take a Maybe [ParserAny] and print it
 -- | Print the SExpr if the Maybe [ParserAny] is correct

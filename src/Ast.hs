@@ -86,27 +86,29 @@ data EnvVar =
   | Function Func
   deriving (Show, Eq)
 
-type Env = Map.Map String (EnvVar)
+type Env = Map.Map String EnvVar
 
 -- | tryReadVar searches for a variable in the environment (Env). *
 -- If found, it returns a pair with the value and the original environment.
 -- If not found, it provides an error message for an unknown symbol, crucial for variable lookups in the environment.
 
 -- Redefine the tryReadVar function to handle the new Env type
-tryReadVar :: String -> Env -> Either (Ast, Env) String
-tryReadVar key m =
-  case Map.lookup key m of
-    Nothing -> Right $ "Unknown symbol " ++ key
-    Just (Left (_, varAst))  -> Left (varAst, m)
-    Just (Right _) -> Right $ "*** ERROR: Variable " ++ key ++ " is not bound."
+tryReadVar :: String -> Env -> Either String Ast
+tryReadVar key env =
+  case Map.lookup key env of
+    Nothing -> Left $ "Unknown symbol " ++ key
+    Just (Var varAst)  -> Right varAst
+    Just (Function _) -> Left $ "*** ERROR: Variable "++key++" is not bound."
 
 -- Redefine the lookupSymbol function to handle the new Env type
---lookupSymbol :: String -> Env -> Either String Ast
---lookupSymbol symbol env =
---  case Map.lookup symbol env of
---    Just (Left (_, value)) -> Right value
---    Just (Right _) -> Left ("*** ERROR: Variable " ++ symbol ++ " not bound")
---    Nothing        -> Left ("*** ERROR: Variable " ++ symbol ++ " not bound")
+lookupSymbol :: String -> Env -> Either String Ast
+lookupSymbol symbol env =
+  case Map.lookup symbol env of
+    Just (Var value) -> Right value
+    Just (Function _) -> Left ("*** ERROR: Variable " ++
+                  symbol ++ " is not bound.")
+    Nothing -> Left ("*** ERROR: Variable " ++ symbol ++
+              " is not bound.")
 
 -- Function to convert a list of SExpr into a list of strings
 sexprToAstFunctionArguments :: [SExpr] -> Either String [String]
@@ -115,7 +117,7 @@ sexprToAstFunctionArguments (SSym arg : t) =
   case sexprToAstFunctionArguments t of
     Left err -> Left err
     Right rest -> Right (arg : rest)
-sexprToAstFunctionArguments _ = Left "*** ERROR : (sexprToAstFunctionArguments)."
+sexprToAstFunctionArguments _ = Left "***ERROR: (sexprToAstFunctionArguments)."
 
 -- Function to convert a SExpr to an Ast
 sexprToAst :: SExpr -> Either String Ast
@@ -141,23 +143,20 @@ sexprToAst (SList nestedExprs) = do
   nestedAsts <- mapM sexprToAst nestedExprs
   Right (Call "nested" nestedAsts)
 
-
 -- Function to evaluate binary operations
 evalBinaryOp ::
-  (Int -> Int -> Int) -> Ast -> Ast -> Env -> Either String (Ast, Env)
+     (Int -> Int -> Int) -> Ast -> Ast -> Env -> Either String (Ast, Env)
 evalBinaryOp op a b env = do
-  let evalResult = do
-        (aValue, env1) <- evalAst a env
-        (bValue, env2) <- evalAst b env1
-        case (aValue, bValue) of
-          (Value (SInt x), Value (SInt y)) -> Right (Value (SInt (x `op` y)), env2)
-          (Value (SSym symA), Value (SInt y)) -> do
-            symbolValueA <- lookupSymbol symA env2
-            case symbolValueA of
-              Value (SInt x) -> Right (Value (SInt (x `op` y)), env2)
-              _ -> Left "Error: symbol value is not an integer"
-          _ -> Left "Error: invalid value types"
-  evalResult
+  (evalA, env1) <- evalAst a env
+  (evalB, env2) <- evalAst b env1
+  case (evalA, evalB) of
+    (Value (SInt x), Value (SInt y)) -> Right (Value (SInt (x `op` y)), env2)
+    (Value (SSym symA), Value (SInt y)) -> do
+      symbolValueA <- lookupSymbol symA env2
+      case symbolValueA of
+        Value (SInt x) -> Right (Value (SInt (x `op` y)), env2)
+        _              -> Left "Error: symbol value is not an integer"
+    _ -> Left "Error: invalid value types"
 
 -- Functions to handle specific binary operations
 evalAdd :: Ast -> Ast -> Env -> Either String (Ast, Env)
@@ -183,10 +182,11 @@ evalAst (Value v) env = Right (Value v, env)
 --evalAst (Symbol var) env =
 --  case tryReadVar var env of
 --    Left (v, newEnv) -> Right (v, newEnv)
---    Right str -> Left str
---evalAst (Define var expr) env = do
---  (exprValue, newEnv) <- evalAst expr env
---  Right (Define var exprValue, Map.insert var (Left (var, exprValue)) newEnv)
+--    Right str        -> Left str
+evalAst (Define var expr) env = do
+  (exprValue, newEnv) <- evalAst expr env
+  let updatedEnv = Map.insert var (Var exprValue) newEnv
+  Right (Define var exprValue, updatedEnv)
 evalAst (Call "+" [a, b]) env = evalAdd a b env
 evalAst (Call "-" [a, b]) env = evalSub a b env
 evalAst (Call "*" [a, b]) env = evalMul a b env
@@ -197,10 +197,10 @@ evalAst (Call "<" [a, b]) env = evalComparison (<) a b env
 evalAst (Call "eq?" [a, b]) env = evalComparison (==) a b env
 evalAst (Call "if" [condExpr, trueExpr, falseExpr]) env =
   evalIf condExpr trueExpr falseExpr env
---evalAst (Call "nested" [Define var expr, expr2]) env = do
---  (exprValue, _) <- evalAst expr env
---  let updatedEnv = Map.insert var (Left (var, exprValue)) env
---  evalAst expr2 updatedEnv
+evalAst (Call "nested" [Define var expr, expr2]) env = do
+  (exprValue, newEnv) <- evalAst expr env
+  let updatedEnv = Map.insert var (Var exprValue) newEnv
+  evalAst expr2 updatedEnv
 --evalAst (Call "nested" [DefineFunction name args ins, expr2]) env = do
 --  let updatedEnv = Map.insert name (Right (name, args, ins)) env
 --  evalAst expr2 updatedEnv
