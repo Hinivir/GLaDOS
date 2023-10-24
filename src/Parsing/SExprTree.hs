@@ -19,4 +19,7 @@ data SExpr = SExprUndefined
   | SExprString String (Int, Int)
   | SExprSymbol String (Int, Int)
   | SExprGroup [SExpr] (Int, Int)
+  | SExprList [SExpr] (Int, Int)
+  | SExprDict [SExpr] (Int, Int)
+  | SExprTuple [SExpr] (Int, Int)
   deriving (Eq, Show)
