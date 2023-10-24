@@ -103,16 +103,6 @@ lookupSymbol symbol env =
     Just (Right _) -> Left ("*** ERROR: Variable " ++ symbol ++ " not bound")
     Nothing        -> Left ("*** ERROR: Variable " ++ symbol ++ " not bound")
 
--- Function to convert a list of SExpr into a list of strings
-sexprToAstFunctionArguments :: [SExpr] -> Either String [String]
-sexprToAstFunctionArguments [] = Right []
-sexprToAstFunctionArguments (SSym arg : t) =
-  case sexprToAstFunctionArguments t of
-    Left err -> Left err
-    Right rest -> Right (arg : rest)
-sexprToAstFunctionArguments _ =
-  Left "*** ERROR : (sexprToAstFunctionArguments)"
-
 -- Function to convert a SExpr to an Ast
 sexprToAst :: SExpr -> Either String Ast
 sexprToAst (SList [SSym "define", SSym var, expr]) =
@@ -177,7 +167,6 @@ evalAst (Symbol var) env =
 evalAst (Define var expr) env = do
   (exprValue, newEnv) <- evalAst expr env
   Right (Define var exprValue, Map.insert var (Left (var, exprValue)) newEnv)
-evalAst (Call name args) env = evalFunction (Call name args) env
 evalAst (Call "+" [a, b]) env = evalAdd a b env
 evalAst (Call "-" [a, b]) env = evalSub a b env
 evalAst (Call "*" [a, b]) env = evalMul a b env
@@ -195,6 +184,7 @@ evalAst (Call "nested" [Define var expr, expr2]) env = do
 evalAst (Call "nested" [DefineFunction name args ins, expr2]) env = do
   let updatedEnv = Map.insert name (Right (name, args, ins)) env
   evalAst expr2 updatedEnv
+evalAst (Call name args) env = evalFunction (Call name args) env
 evalAst _ _ = Left "error while evaluating ast"
 
 evalFunction :: Ast -> Env -> Either String (Ast, Env)
@@ -208,16 +198,6 @@ evalFunction (Call name args) env =
           evalAst funcIns updatedEnv2
         else Left "Error: wrong number of arguments"
     _ -> Left "Error: function not found"
-
--- Function to evaluate binary operations
-evalBinOp ::
-  (Ast -> Ast -> Env -> Either String (Ast, Env))
-  -> Ast -> Ast -> Env -> Either String (Ast, Env)
-evalBinOp op a b env = do
-  (aValue, env1) <- evalAst a env
-  (bValue, env2) <- evalAst b env1
-  (result, env3) <- op aValue bValue env2
-  Right (result, env3)
 
 -- Function to compare values
 compareValues ::
