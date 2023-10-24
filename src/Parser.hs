@@ -19,8 +19,10 @@ Le type `BetterParser` est similaire à `Parser`, mais renvoie également une ch
 module Parser
   ( Parser
   , ParserAny (ParserChar, ParserInt, ParserString)
+  , StringToParserOutput
+  , isolateStringToParserOutput
+  , isolateStringToParserStatus
   , runParser
-  , BetterParser
   , parseChar
   , parseAnyChar
   , parseOr
@@ -35,13 +37,15 @@ module Parser
   , stringToParser
   ) where
 
+import ParserStatus (
+  ParserStatus,
+  createParserStatusErrorSimple,
+  createParserStatusOk
+  )
+
 import Data.Char (isDigit)
 
 --type Parser a = String -> Maybe (a, String)
-
-type Error = Maybe String
-
-type BetterParser a = String -> Maybe (a, Error, String)
 
 -- | Parse a char in a string
 --
@@ -60,6 +64,14 @@ data Parser a =
 data ParserAny = ParserChar Char | ParserInt Int | ParserString String
   deriving (Eq, Show)
 
+type StringToParserOutput = (Maybe [ParserAny], ParserStatus)
+
+isolateStringToParserOutput :: StringToParserOutput -> Maybe [ParserAny]
+isolateStringToParserOutput (output, _) = output
+
+isolateStringToParserStatus :: StringToParserOutput -> ParserStatus
+isolateStringToParserStatus (_, status) = status
+
 -- | Parse a char in a string
 --
 -- Returns 'Nothing' if the char is not in the string.
@@ -72,6 +84,7 @@ parseChar c =
         | x == c -> Just (c, xs)
       _ -> Nothing
 
+-- UNUSED
 parseOr :: Parser a -> Parser a -> Parser a
 parseOr p1 p2 =
   Parser $ \input ->
@@ -88,9 +101,11 @@ parseAnyChar (x:xs) = parseOr (parseChar x) (parseAnyChar xs)
 parseAnyChar []     = Parser $ const Nothing
 
 
+-- UNUSED
 parseAnd :: Parser a -> Parser b -> Parser (a, b)
 parseAnd p1 p2 = parseAndWith (,) p1 p2
 
+-- UNUSED
 parseAndWith :: (a -> b -> c) -> Parser a -> Parser b -> Parser c
 parseAndWith f p1 p2 =
   Parser $ \input ->
@@ -102,6 +117,7 @@ parseAndWith f p1 p2 =
       Nothing -> Nothing
 
 
+-- UNUSED
 parseMany :: Parser a -> Parser [a]
 parseMany p =
   Parser $ \input ->
@@ -150,6 +166,7 @@ parseInt =
   where
     parseNegativeInt = parseIntCheckNegative
 
+-- UNUSED
 -- Parse a pair of integers enclosed in parentheses
 parsePair :: Parser a -> Parser (a, a)
 parsePair parser =
@@ -161,6 +178,7 @@ parsePair parser =
     (_, input6) <- runParser (parseChar ')') input5
     return ((y, z), input6)
 
+-- UNUSED
 parseListSegment :: Parser a -> [a] -> Parser [a]
 parseListSegment parser list =
   Parser $ \input1 -> do
@@ -171,6 +189,7 @@ parseListSegment parser list =
     where
       runParseListSegment = parseListSegment parser
 
+-- UNUSED
 parseList :: Parser a -> Parser [a]
 parseList parser =
   Parser $ \input1 -> do
@@ -182,10 +201,10 @@ parseList parser =
 
 -- STRING TO PARSER --
 
-stringToParserAdd :: ParserAny -> String -> Maybe [ParserAny]
+stringToParserAdd :: ParserAny -> String -> StringToParserOutput
 stringToParserAdd element string = case stringToParser string of
-  Just list -> Just (element:list)
-  Nothing   -> Nothing
+  (Just list, parserStatus) -> (Just (element:list), parserStatus)
+  (Nothing, parserStatus)   -> (Nothing, parserStatus)
 
 stringToParserIsEmpty :: Char -> Bool
 stringToParserIsEmpty ' ' = True
@@ -203,24 +222,34 @@ stringListOperators = "+-*/%<>=?!#"
 stringList :: [Char]
 stringList = ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ stringListOperators
 
-stringToParserCaseUnique :: String -> Maybe [ParserAny]
-stringToParserCaseUnique []    = Nothing
+stringToParserCaseUnique :: String -> StringToParserOutput
+stringToParserCaseUnique []    = (Nothing,
+  createParserStatusErrorSimple "stringToParserCaseUnique" "")
 stringToParserCaseUnique (h:t) = case runParser (parseChar h) (h:t) of
   Just (char, inp)  -> stringToParserAdd (ParserChar char) inp
-  Nothing           -> Nothing
+  Nothing           -> (Nothing,
+    createParserStatusErrorSimple "stringToParserCaseUnique" "")
 
-stringToParserCaseDigit :: String -> Maybe [ParserAny]
-stringToParserCaseDigit []    = Nothing
+stringToParserCaseDigit :: String -> StringToParserOutput
+stringToParserCaseDigit []    = (Nothing,
+  createParserStatusErrorSimple "stringToParserCaseDigit" "")
 stringToParserCaseDigit (h:t) = case runParser (parseInt) (h:t) of
-  Just (int, inp)  -> stringToParserAdd (ParserInt int) inp
-  Nothing           -> Nothing
+  Just (int, []) -> stringToParserAdd (ParserInt int) []
+  Just (int, (inpH:inpT)) ->
+    case or [stringToParserIsEmpty inpH, stringToParserIsUnique inpH] of
+      True  -> stringToParserAdd (ParserInt int) (inpH:inpT)
+      False -> (Nothing,
+        createParserStatusErrorSimple "stringToParserCaseDigit" "")
+  Nothing                 -> (Nothing,
+    createParserStatusErrorSimple "stringToParserCaseDigit" "")
 
-stringToParser :: String -> Maybe [ParserAny]
-stringToParser [] = Just ([])
+stringToParser :: String -> StringToParserOutput
+stringToParser [] = (Just [], createParserStatusOk)
 stringToParser (h:t)
   | stringToParserIsEmpty h = stringToParser t
   | stringToParserIsUnique h = stringToParserCaseUnique (h:t)
   | isDigit h = stringToParserCaseDigit (h:t)
   | otherwise = case runParser (parseSome (parseAnyChar stringList)) (h:t) of
     Just (str, inp)   -> stringToParserAdd (ParserString str) inp
-    Nothing           -> Nothing
+    Nothing           -> (Nothing,
+      createParserStatusErrorSimple "stringToParser" "")
