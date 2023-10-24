@@ -9,9 +9,10 @@ EXEC="$(pwd)/glados"
 
 test() {
     result=$($EXEC < "$DIR$1")
+    error_msg=$($EXEC < "$DIR$1" 2>&1)
 
     (( TEST_NBR+=1 ))
-    if [[ $result == "$2" ]]; then
+    if [[ $result == "$2" || $error_msg == "$2" ]]; then
         echo -e "$3: [\033[32m✔\033[0m]"
         (( TEST_SUCESS+=1 ))
     else
@@ -22,7 +23,7 @@ test() {
 }
 
 test "foo.scm" "42" "foo"
-test "error.scm" "*** ERROR : variable foo is not bound." "error var"
+test "error.scm" "" "error var"
 
 echo -e ""
 

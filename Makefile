@@ -30,7 +30,8 @@ test_run:
 coverage:
 	$(STACK) test --coverage
 
-functional_test:
+functional_test: re
+	chmod +x ./test/functional_test.sh
 	./test/functional_test.sh
 
 fclean_test: fclean
