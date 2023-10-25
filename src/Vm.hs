@@ -21,8 +21,8 @@ module Vm
         exec
     ) where
 
-import Data.Char (isDigit)
-import Data.Either
+import Data.Char()
+import Data.Either()
 
 data Value = Number Int
             | Boolean Bool
@@ -53,7 +53,10 @@ data Instruction = Push Value
 type Args = [Value]
 type Stack = [Value]
 type Instructions = [Instruction]
-type Env = [(String, Instructions)]
+data EnvVar = Var Value
+            | Function Instructions
+            deriving (Show, Eq)
+type Env = [(String, EnvVar)]
 
 resInt :: Either String Value -> Int
 resInt (Right (Number x)) = x
@@ -86,8 +89,8 @@ execFunc args env (Func instr) [] = exec args env instr []
 execFunc _ _ _ _ = Left "Error: invalid function"
 
 pushFromEnv :: Env -> String -> Either String Instructions
-pushFromEnv [] str = Left "Error: function not found"
-pushFromEnv ((fc, instr):xs) str
+pushFromEnv [] _ = Left "Error: function not found"
+pushFromEnv ((fc, Function instr):xs) str
     | fc == str = Right instr
     | otherwise = pushFromEnv xs str
 
@@ -96,16 +99,18 @@ exec args env (PushEnv str:xs) stack = do
     z <- pushFromEnv env str
     exec args env xs (Func z:stack)
 exec args env (PushArg y:ys) stack = exec args env ys ((args !! y):stack)
+exec [] _ (PushArg _:_) _ = Left "Error: cannot push argument (empty)"
 exec args env (Push x:xs) stack = exec args env xs (x:stack)
+exec _ _ (Push _:_) _ = Left "Error: cannot push argument (empty)"
 exec args env (Call:xs) (Func f:stack) = do
     z <- execFunc stack env (Func f) []
     exec args env xs (z:stack)
 exec args env (Call:xs) (Op op:x:y:stack) = do
     z <- callOp op x y
     exec args env xs (z:stack)
-exec args env (Ret:_) (x:_) = Right x
+exec _ _ (Ret:_) (x:_) = Right x
 exec args env (JumpIfFalse n:xs) (Boolean False:ys) =
     exec args env (drop n xs) ys
-exec args env (JumpIfFalse n:xs) (_:stack) = exec args env xs stack
+exec args env (JumpIfFalse _:xs) (_:stack) = exec args env xs stack
 exec args env (Jump n:xs) stack = exec args env (drop n xs) stack
 exec _ _ _ _ = Left "Invalid instruction"
