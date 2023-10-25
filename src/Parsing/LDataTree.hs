@@ -9,7 +9,7 @@ module Parsing.LDataTree (
   LData(..)
 ) where
 
--- SEXPR --
+-- LData --
 
 -- | The LData data type represents an S-Expression.
 data LData = LDataUndefined
