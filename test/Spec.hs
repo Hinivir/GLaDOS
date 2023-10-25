@@ -30,7 +30,6 @@ import TestParser (
   )
 import TestVm (
   testCallOp,
-  testExec
   )
 
 main :: IO ()
