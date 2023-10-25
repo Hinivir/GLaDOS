@@ -7,6 +7,7 @@
 
     module TestVm
     ( testCallOp,
+        testExec
     )
     where
 
@@ -43,5 +44,14 @@
               "Test Not Less Number" ~: callOp Less (Number 7) (Number 3) @?= Right (Boolean False),
               "Test Greater Number" ~: callOp Greater (Number 7) (Number 3) @?= Right (Boolean True),
               "Test Not Greater Number" ~: callOp Greater (Number 3) (Number 7) @?= Right (Boolean False)
+            ]
+
+    testExec :: Test
+    testExec =
+        TestList
+            [ "Test exec with valid input" ~:
+                exec [Number 1] [] [PushArg 0, Push (Number 1), Push (Op Add), Call, Ret] [] ~?= Right (Number 2)
+            , "Test exec with invalid input" ~:
+                exec [Boolean True] [] [PushArg 0, Push (Number 1), Push (Op Add), Call, Ret] [] ~?= Left "Error: invalid operation"
             ]
 

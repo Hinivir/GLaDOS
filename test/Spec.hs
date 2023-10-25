@@ -30,6 +30,7 @@ import TestParser (
   )
 import TestVm (
   testCallOp,
+  testExec
   )
 
 main :: IO ()
@@ -72,4 +73,6 @@ main = do
   _ <- runTestTT testParserToSExpr
   putStrLn "Run test for the Vm callOp"
   _ <- runTestTT testCallOp
+  putStrLn "Run test for the Vm exec "
+  _ <- runTestTT testExec
   return ()
