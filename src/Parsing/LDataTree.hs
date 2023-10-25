@@ -6,12 +6,13 @@
 -}
 
 module Parsing.LDataTree (
-  LData(..)
+  LData(..),
+  getLDataCoordinates
 ) where
 
 -- LData --
 
--- | The LData data type represents an S-Expression.
+-- | The LData data type
 data LData = LDataUndefined
   | LDataBool Bool (Int, Int)
   | LDataInt Int (Int, Int)
@@ -23,3 +24,16 @@ data LData = LDataUndefined
   | LDataDict [LData] (Int, Int)
   | LDataTuple [LData] (Int, Int)
   deriving (Eq, Show)
+
+--
+getLDataCoordinates :: LData -> (Int, Int)
+getLDataCoordinates (LDataBool _ coor) = coor
+getLDataCoordinates (LDataInt _ coor) = coor
+getLDataCoordinates (LDataFloat _ coor) = coor
+getLDataCoordinates (LDataString _ coor) = coor
+getLDataCoordinates (LDataSymbol _ coor) = coor
+getLDataCoordinates (LDataGroup _ coor) = coor
+getLDataCoordinates (LDataList _ coor) = coor
+getLDataCoordinates (LDataDict _ coor) = coor
+getLDataCoordinates (LDataTuple _ coor) = coor
+getLDataCoordinates _ = (0, 0)

@@ -30,7 +30,7 @@ import Parsing.LDataTree (
   LData(..)
   )
 
--- TOKENIZER
+-- LDATATREE
 
 type LDataTreeIn = [TokenizedAny]
 type LDataTreeOut = (LData, LDataTreeIn, ParserStatus)
