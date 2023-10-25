@@ -1,12 +1,24 @@
-{- 
+{-
 -- EPITECH PROJECT, 2023
 -- glados_bootstrap
 -- File description:
 -- vm.hs
 -}
 
-module Value
-    ( Value
+module Vm
+    ( Value(..),
+        Operation(..),
+        Instruction(..),
+        Args,
+        Stack,
+        Instructions,
+        Env,
+        resInt,
+        resBool,
+        resOp,
+        callOp,
+        execFunc,
+        exec
     ) where
 
 import Data.Char (isDigit)
@@ -87,5 +99,5 @@ exec args env (Call:xs) (Op op:x:y:stack) = do
 exec args env (Ret:_) (x:_) = Right x
 exec args env (JumpIfFalse n:xs) (Boolean False:ys) =
     exec args env (drop n xs) ys
-exec args env (JumpIfFalse n:xs) (_:stack) = e xec args env xs stack
+exec args env (JumpIfFalse n:xs) (_:stack) = exec args env xs stack
 exec _ _ _ _ = Left "Invalid instruction"
