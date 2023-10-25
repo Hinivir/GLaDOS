@@ -27,6 +27,7 @@ import Data.Either
 data Value = Number Int
             | Boolean Bool
             | Op Operation
+            | Str String
             | Func [Instruction]
             deriving (Show, Eq)
 
@@ -34,8 +35,10 @@ data Operation = Add
                 | Sub
                 | Mul
                 | Div
+                | Mod
                 | Eq
                 | Less
+                | Greater
                 deriving (Show, Eq)
 
 data Instruction = Push Value
@@ -44,6 +47,7 @@ data Instruction = Push Value
                 | Call
                 | Ret
                 | JumpIfFalse Int
+                | Jump Int
                 deriving (Show, Eq)
 
 type Args = [Value]
@@ -69,9 +73,12 @@ callOp Sub (Number x) (Number y) = Right (Number(x - y))
 callOp Mul (Number x) (Number y) = Right (Number(x * y))
 callOp Div _ (Number 0) = Left "Error: division by zero"
 callOp Div (Number x) (Number y) = Right (Number(x `div` y))
+callOp Mod _ (Number 0) = Left "Error: modulo by zero"
+callOp Mod (Number x) (Number y) = Right (Number(x `mod` y))
 callOp Eq (Number x) (Number y) = Right (Boolean(x == y))
 callOp Eq (Boolean x) (Boolean y) = Right (Boolean(x == y))
 callOp Less (Number x) (Number y) = Right (Boolean(x < y))
+callOp Greater (Number x) (Number y) = Right (Boolean(x > y))
 callOp _ _ _ = Left "Error: invalid operation"
 
 execFunc :: Args -> Env -> Value -> Stack -> Either String Value
@@ -100,4 +107,5 @@ exec args env (Ret:_) (x:_) = Right x
 exec args env (JumpIfFalse n:xs) (Boolean False:ys) =
     exec args env (drop n xs) ys
 exec args env (JumpIfFalse n:xs) (_:stack) = exec args env xs stack
+exec args env (Jump n:xs) stack = exec args env (drop n xs) stack
 exec _ _ _ _ = Left "Invalid instruction"
