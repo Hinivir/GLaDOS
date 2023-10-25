@@ -1,8 +1,8 @@
 {-
 -- EPITECH PROJECT, 2023
--- TestParser
+-- GLaDOS
 -- File description:
--- TestParser
+-- TestParser.hs
 -}
 
 module TestParser (
@@ -18,14 +18,14 @@ module TestParser (
   testParsePair,
   testParseList,
   testStringToParser
-  ) where
+) where
 
 import Test.HUnit
 import Parser
 import ParserStatus (
   createParserStatusOk,
   interpretParserStatus
-  )
+)
 
 testParseChar :: Test
 testParseChar =

@@ -2,7 +2,7 @@
 -- EPITECH PROJECT, 2023
 -- GLaDOS
 -- File description:
--- test for SExpr
+-- TestSExpr.hs
 -}
 
 module TestSExpr (
@@ -20,7 +20,7 @@ import Test.HUnit
 import Parser (
   stringToParser,
   ParserAny(..)
-  )
+)
 
 -- Define test cases
 testSExpr :: Test

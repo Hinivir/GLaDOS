@@ -2,9 +2,8 @@
 -- EPITECH PROJECT, 2023
 -- GLaDOS
 -- File description:
--- test ast
+-- TestAst.hs
 -}
-
 
 module TestAst (
   testSExprToAst,
@@ -13,7 +12,8 @@ module TestAst (
   testEvalMul,
   testEvalDiv,
   testEvalMod,
-  testsEvalAst,) where
+  testsEvalAst
+) where
 
 import Ast
 import SExpr

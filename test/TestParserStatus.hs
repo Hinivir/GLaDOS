@@ -2,7 +2,7 @@
 -- EPITECH PROJECT, 2023
 -- GLaDOS
 -- File description:
--- test parser status
+-- TestParserStatus.hs
 -}
 
 
@@ -10,7 +10,7 @@ module TestParserStatus (
   testInterpretParserStatus,
   testIsParserStatusError,
   testIsParserStatusOk
-  ) where
+) where
 
 import ParserStatus
 import Test.HUnit

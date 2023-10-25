@@ -2,18 +2,11 @@
 -- EPITECH PROJECT, 2023
 -- GLaDOS
 -- File description:
--- Spec
+-- Spec.hs
 -}
 
 import Test.HUnit
-import TestSExpr (
-  printTreeTests,
-  testSExpr,
-  testParserToSExprInt,
-  testParserToSExprString,
-  testParserToSExprList,
-  testParserToSExpr
-  )
+
 import TestAst (
   testSExprToAst,
   testEvalAdd,
@@ -22,7 +15,8 @@ import TestAst (
   testEvalDiv,
   testEvalMod,
   testsEvalAst
-  )
+)
+
 import TestParser (
   testParseChar,
   testParseAnyChar,
@@ -36,8 +30,27 @@ import TestParser (
   testParsePair,
   testParseList,
   testStringToParser
-  )
-import TestParserStatus
+)
+
+import TestParserStatus -- (
+--   testInterpretParserStatus,
+--   testIsParserStatusError,
+--   testIsParserStatusOk
+-- )
+
+import TestSExpr (
+  printTreeTests,
+  testSExpr,
+  testParserToSExprInt,
+  testParserToSExprString,
+  testParserToSExprList,
+  testParserToSExpr
+)
+
+import TestTokenizer (
+
+)
+
 
 main :: IO ()
 main = do
