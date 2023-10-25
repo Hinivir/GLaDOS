@@ -80,6 +80,13 @@ expressTokenizedFunc ((TokenizedFloat x coor):t) =
 -- TokenizedLiteral
 expressTokenizedFunc ((TokenizedLiteral x coor):t) =
   ((LDataString x coor), t, createParserStatusOk)
+-- TokenizedLine
+expressTokenizedFunc ((TokenizedLine list):t) =
+  case expressGroup list of
+    (output, status)
+      | isParserStatusError status  -> (LDataUndefined, [], status)
+      | otherwise                   ->
+        (LDataGroup output (0, 0), t, createParserStatusOk)
 -- TokenizedList
 expressTokenizedFunc ((TokenizedList '(' list coor):t) =
   case expressGroup list of
@@ -97,7 +104,9 @@ expressTokenizedFunc ((TokenizedList x _ coor):t) = case coor of
   (ln, col) -> (LDataUndefined, [], createParserStatusError
     ("Unsupported TokenizedList starting with '" ++ [x] ++ "'")
     "(expressTokenizedFunc)" ln col)
--- TokenizedChar (error)
+-- TokenizedChar
+expressTokenizedFunc ((TokenizedChar ':' coor):t) =
+  ((LDataSymbol ":" coor), t, createParserStatusOk)
 expressTokenizedFunc ((TokenizedChar x coor):t) = case coor of
   (ln, col) -> (LDataUndefined, [], createParserStatusError
     ("Unsupported TokenizedChar '" ++ [x] ++ "'")

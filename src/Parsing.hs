@@ -7,7 +7,8 @@
 
 module Parsing (
   parsingToTokenList,
-  parsingToTokenTree
+  parsingToTokenTree,
+  parsingToLDataTree
 ) where
 
 import ParserStatus (
