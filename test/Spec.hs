@@ -114,4 +114,13 @@ main = do
   _ <- runTestTT testParserToSExprList
   putStrLn "Run test for Parser to SExpr"
   _ <- runTestTT testParserToSExpr
+
+--  -- TestTokenizer
+--  putStrLn "Run test for ..."
+--  _ <- runTestTT test...
+--  putStrLn "Run test for ..."
+--  _ <- runTestTT test...
+--  putStrLn "Run test for ..."
+--  _ <- runTestTT test...
+
   return ()
