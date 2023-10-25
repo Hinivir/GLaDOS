@@ -9,13 +9,12 @@ module Main
   ( main
   ) where
 
-import Ast (sexprToAst, evalAst, Ast(..))
+import Ast (sexprToAst)
 import Parser (ParserAny, stringToParser)
 import ParserToSExpr (parserToSExpr)
 import SExpr (SExpr(..))
 import System.Exit
 import System.IO
-import qualified Data.Map as Map
 
 -- | Function that take a String and print it
 -- | Print the String and exit with an error
@@ -34,12 +33,6 @@ readLines = do
       rest <- readLines
       return (line ++ "\n" ++ rest)
 
-getResult :: Ast -> IO ()
-getResult (Value (SInt x)) = print x
-getResult (Value (SBool True)) = putStrLn "#t"
-getResult (Value (SBool False)) = putStrLn "#f"
-getResult _ = error "error while getting result"
-
 -- | Function that take a SExpr and print it
 -- | Print the Ast if the SExpr is correct
 -- | Print "error while getting ast" if the SExpr is incorrect
@@ -47,9 +40,7 @@ getAst :: SExpr -> IO ()
 getAst sexpr =
   case sexprToAst sexpr of
     Left str -> errorExit str
-    Right ast -> case evalAst ast Map.empty of
-      Left str -> errorExit str
-      Right (ast', _) -> getResult ast'
+    Right ast -> print ast
 
 -- | Function that take a Maybe [ParserAny] and print it
 -- | Print the SExpr if the Maybe [ParserAny] is correct

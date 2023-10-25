@@ -51,17 +51,9 @@ module Ast
   , Env
   -- * Functions
   , sexprToAst
-  , evalAdd
-  , evalSub
-  , evalMul
-  , evalDiv
-  , evalMod
-  , evalAst
   ) where
 
 import SExpr (SExpr (..))
-
-import qualified Data.Map as Map
 
 -- | The AST data type.
 data Ast
@@ -86,29 +78,11 @@ data EnvVar =
   | Function Func
   deriving (Show, Eq)
 
-type Env = Map.Map String EnvVar
+type Env = [(String, EnvVar)]
 
 -- | tryReadVar searches for a variable in the environment (Env). *
 -- If found, it returns a pair with the value and the original environment.
 -- If not found, it provides an error message for an unknown symbol, crucial for variable lookups in the environment.
-
--- Redefine the tryReadVar function to handle the new Env type
-tryReadVar :: String -> Env -> Either String Ast
-tryReadVar key env =
-  case Map.lookup key env of
-    Nothing -> Left $ "Unknown symbol " ++ key
-    Just (Var varAst)  -> Right varAst
-    Just (Function _) -> Left $ "*** ERROR: Variable "++key++" is not bound."
-
--- Redefine the lookupSymbol function to handle the new Env type
-lookupSymbol :: String -> Env -> Either String Ast
-lookupSymbol symbol env =
-  case Map.lookup symbol env of
-    Just (Var value) -> Right value
-    Just (Function _) -> Left ("*** ERROR: Variable " ++
-                  symbol ++ " is not bound.")
-    Nothing -> Left ("*** ERROR: Variable " ++ symbol ++
-              " is not bound.")
 
 -- Function to convert a list of SExpr into a list of strings
 sexprToAstFunctionArguments :: [SExpr] -> Either String [String]
@@ -142,98 +116,3 @@ sexprToAst (SList []) = Left "error empty list"
 sexprToAst (SList nestedExprs) = do
   nestedAsts <- mapM sexprToAst nestedExprs
   Right (Call "nested" nestedAsts)
-
--- Function to evaluate binary operations
-evalBinaryOp ::
-     (Int -> Int -> Int) -> Ast -> Ast -> Env -> Either String (Ast, Env)
-evalBinaryOp op a b env = do
-  (evalA, env1) <- evalAst a env
-  (evalB, env2) <- evalAst b env1
-  case (evalA, evalB) of
-    (Value (SInt x), Value (SInt y)) -> Right (Value (SInt (x `op` y)), env2)
-    (Value (SSym symA), Value (SInt y)) -> do
-      symbolValueA <- lookupSymbol symA env2
-      case symbolValueA of
-        Value (SInt x) -> Right (Value (SInt (x `op` y)), env2)
-        _              -> Left "Error: symbol value is not an integer"
-    _ -> Left "Error: invalid value types"
-
--- Functions to handle specific binary operations
-evalAdd :: Ast -> Ast -> Env -> Either String (Ast, Env)
-evalAdd = evalBinaryOp (+)
-
-evalSub :: Ast -> Ast -> Env -> Either String (Ast, Env)
-evalSub = evalBinaryOp (-)
-
-evalMul :: Ast -> Ast -> Env -> Either String (Ast, Env)
-evalMul = evalBinaryOp (*)
-
-evalDiv :: Ast -> Ast -> Env -> Either String (Ast, Env)
-evalDiv (Value (SInt _)) (Value (SInt 0)) _ = Left "Error division by zero"
-evalDiv a b env = evalBinaryOp div a b env
-
-evalMod :: Ast -> Ast -> Env -> Either String (Ast, Env)
-evalMod (Value (SInt _)) (Value (SInt 0)) _ = Left "Error modulo by zero"
-evalMod a b env = evalBinaryOp mod a b env
-
--- Function to evaluate an Ast
-evalAst :: Ast -> Env -> Either String (Ast, Env)
-evalAst (Value v) env = Right (Value v, env)
---evalAst (Symbol var) env =
---  case tryReadVar var env of
---    Left (v, newEnv) -> Right (v, newEnv)
---    Right str        -> Left str
-evalAst (Define var expr) env = do
-  (exprValue, newEnv) <- evalAst expr env
-  let updatedEnv = Map.insert var (Var exprValue) newEnv
-  Right (Define var exprValue, updatedEnv)
-evalAst (Call "+" [a, b]) env = evalAdd a b env
-evalAst (Call "-" [a, b]) env = evalSub a b env
-evalAst (Call "*" [a, b]) env = evalMul a b env
-evalAst (Call "div" [a, b]) env = evalDiv a b env
-evalAst (Call "mod" [a, b]) env = evalMod a b env
-evalAst (Call ">" [a, b]) env = evalComparison (>) a b env
-evalAst (Call "<" [a, b]) env = evalComparison (<) a b env
-evalAst (Call "eq?" [a, b]) env = evalComparison (==) a b env
-evalAst (Call "if" [condExpr, trueExpr, falseExpr]) env =
-  evalIf condExpr trueExpr falseExpr env
-evalAst (Call "nested" [Define var expr, expr2]) env = do
-  (exprValue, newEnv) <- evalAst expr env
-  let updatedEnv = Map.insert var (Var exprValue) newEnv
-  evalAst expr2 updatedEnv
---evalAst (Call "nested" [DefineFunction name args ins, expr2]) env = do
---  let updatedEnv = Map.insert name (Right (name, args, ins)) env
---  evalAst expr2 updatedEnv
-evalAst _ _ = Left "error while evaluating ast"
-
--- Function to compare values
-compareValues ::
-  (Int -> Int -> Bool) -> Ast -> Ast -> Env -> Either String (Ast, Env)
-compareValues op aValue bValue env =
-  case (aValue, bValue) of
-    (Value (SInt x), Value (SInt y)) -> Right (Value (SBool (op x y)), env)
-    (Value (SSym symA), Value (SInt y)) -> do
-      symbolValueA <- lookupSymbol symA env
-      case symbolValueA of
-        Value (SInt x) -> Right (Value (SBool (op x y)), env)
-        _ -> Left "Error comparison: symbol value is not an integer"
-    _ -> Left "Error comparison: invalid value types"
-
--- Function to evaluate comparison operations
-evalComparison ::
-  (Int -> Int -> Bool) -> Ast -> Ast -> Env -> Either String (Ast, Env)
-evalComparison op a b env = do
-  (aValue, env1) <- evalAst a env
-  (bValue, env2) <- evalAst b env1
-  compareValues op aValue bValue env2
-
--- Function to handle the "if" statement
-evalIf :: Ast -> Ast -> Ast -> Env -> Either String (Ast, Env)
-evalIf condExpr trueExpr falseExpr env = do
-  (condValue, env1) <- evalAst condExpr env
-  case condValue of
-    Value (SBool condition) ->
-      if condition
-        then evalAst trueExpr env1
-        else evalAst falseExpr env1
-    _ -> Left "error if"
