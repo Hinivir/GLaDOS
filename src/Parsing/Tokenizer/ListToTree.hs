@@ -10,14 +10,16 @@ module Parsing.Tokenizer.ListToTree (
 ) where
 
 import Parsing.Tokenizer (
-  TokenizedAny(TokenizedChar, TokenizedList)
+  TokenizedAny(TokenizedChar, TokenizedLine, TokenizedList)
   )
 
 import Parsing.Tokenizer.Status (
   listUnique,
+  listUniqueEnd,
   listUniquePair,
   listUniquePairEnd,
   listUniquePairStart,
+  listUniqueSnitch,
   isUniquePair
   )
 
@@ -39,8 +41,12 @@ type TokenListIn = [TokenizedAny] -> Maybe TokenizedAny -> TokenListInOutput
 -- TOKENIZE TREE --
 
 --
-isClosingPair :: TokenizedAny -> Char -> Bool
-isClosingPair (TokenizedChar c1 _) c2 = isUniquePair c2 c1
+isClosingPair :: TokenizedAny -> Maybe TokenizedAny -> Bool
+isClosingPair (TokenizedChar c1 _) (Just (TokenizedChar c2 _)) =
+  isUniquePair c2 c1
+isClosingPair (TokenizedChar c1 _) Nothing
+  | c1 `elem` listUniqueEnd = True
+  | otherwise               = False
 isClosingPair _ _ = False
 
 --
@@ -80,14 +86,41 @@ tokenizeListToTreeIn [] (Just (TokenizedChar sep (ln, col))) =
     createParserStatusError ("Unclosed '" ++ [sep] ++ "'") "" ln col)
 tokenizeListToTreeIn [] _ =
   (Just [], [], createParserStatusOk)
-tokenizeListToTreeIn (h:t) sep = case sep of
-  Just (TokenizedChar sepc (ln, col))
-    | isClosingPair h sepc  -> (Just [], t, createParserStatusOk)
-    | otherwise             -> tokenizeListToTreeInSeg (h:t) sep
-  _                         -> tokenizeListToTreeInSeg (h:t) sep
+tokenizeListToTreeIn (h:t) sep
+  | isClosingPair h sep = (Just [], t, createParserStatusOk)
+  | otherwise           = tokenizeListToTreeInSeg (h:t) sep
+
+isMaybeTokenizedAnyEmpty :: [TokenizedAny] -> Bool
+isMaybeTokenizedAnyEmpty [] = True
+isMaybeTokenizedAnyEmpty ((TokenizedLine []):_) = True
+isMaybeTokenizedAnyEmpty _ = False
+
+--
+tokenizeListToTreeLine :: Maybe [TokenizedAny] -> Maybe [TokenizedAny]
+tokenizeListToTreeLine Nothing = Nothing
+tokenizeListToTreeLine (Just x)
+  | isMaybeTokenizedAnyEmpty x  = Just []
+  | otherwise                   = Just [TokenizedLine x]
+
+--
+tokenizeListToTreeLineComb :: Maybe [TokenizedAny] -> Maybe [TokenizedAny] ->
+  Maybe [TokenizedAny]
+tokenizeListToTreeLineComb Nothing _ = Nothing
+tokenizeListToTreeLineComb _ Nothing = Nothing
+tokenizeListToTreeLineComb (Just x) (Just y)
+  | isMaybeTokenizedAnyEmpty x && isMaybeTokenizedAnyEmpty y = Just []
+  | isMaybeTokenizedAnyEmpty x  = Just y
+  | isMaybeTokenizedAnyEmpty y  = Just [TokenizedLine x]
+  | otherwise                   = Just ((TokenizedLine x):y)
 
 --
 tokenizeListToTree :: [TokenizedAny] -> (Maybe [TokenizedAny], ParserStatus)
 tokenizeListToTree [] = (Just [], createParserStatusOk)
 tokenizeListToTree input = case tokenizeListToTreeIn input Nothing of
-  (output, _, status) -> (output, status)
+  (output, [], status)              -> (tokenizeListToTreeLine output, status)
+  (output, rest, status)            -> case tokenizeListToTree rest of
+    (Nothing, status2)              -> (Nothing, status2)
+    (Just output2, status2)
+      | isParserStatusError status2 -> (Nothing, status2)
+      | otherwise                   ->
+        (tokenizeListToTreeLineComb output (Just output2), status2)

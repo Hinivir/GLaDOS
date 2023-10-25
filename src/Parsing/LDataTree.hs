@@ -22,4 +22,5 @@ data LData = LDataUndefined
   | LDataList [LData] (Int, Int)
   | LDataDict [LData] (Int, Int)
   | LDataTuple [LData] (Int, Int)
+  | LDataLine [LData]
   deriving (Eq, Show)

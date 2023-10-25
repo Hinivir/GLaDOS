@@ -20,6 +20,7 @@ data TokenizedAny = TokenizedUndefined
   | TokenizedString String (Int, Int)
   | TokenizedLiteral String (Int, Int)
   | TokenizedList Char [TokenizedAny] (Int, Int)
+  | TokenizedLine [TokenizedAny]
   deriving (Eq, Show)
 
 --
@@ -30,4 +31,5 @@ getTokenizerCoordinates (TokenizedFloat _ coor) = coor
 getTokenizerCoordinates (TokenizedString _ coor) = coor
 getTokenizerCoordinates (TokenizedLiteral _ coor) = coor
 getTokenizerCoordinates (TokenizedList _ _ coor) = coor
+getTokenizerCoordinates (TokenizedLine _) = (0, 0)
 getTokenizerCoordinates _ = (0, 0)
