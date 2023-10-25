@@ -16,11 +16,11 @@ import ParserStatus (
   isParserStatusError
   )
 
-import Parsing.SExprTree (
-  SExpr
+import Parsing.LDataTree (
+  LData
   )
 
-import Parsing.SExprTree.TreeToSExpr (
+import Parsing.LDataTree.TreeToLData (
   expressTokenizedTree
   )
 
@@ -53,12 +53,12 @@ parsingToTokenTree input = case parsingToTokenList input of
         "(parsingToTokenTree) parsingToTokenList returned Nothing")
       Just x                      -> tokenizeListToTree x
 
-parsingToSExprTree :: [String] -> (Maybe [SExpr], ParserStatus)
-parsingToSExprTree input = case parsingToTokenTree input of
+parsingToLDataTree :: [String] -> (Maybe [LData], ParserStatus)
+parsingToLDataTree input = case parsingToTokenTree input of
   (output, status)
     | isParserStatusError status  -> (Nothing, status)
     | otherwise                   -> case output of
       Nothing                     -> (Nothing, createParserStatusErrorSimple
         "Invalid output"
-        "(parsingToSExprTree) parsingToTokenTree returned Nothing")
+        "(parsingToLDataTree) parsingToTokenTree returned Nothing")
       Just x                      -> expressTokenizedTree x

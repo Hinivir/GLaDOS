@@ -2,10 +2,10 @@
 -- EPITECH PROJECT, 2023
 -- GLaDOS
 -- File description:
--- Parsing/SExprTree/TreeToSExpr
+-- Parsing/LDataTree/TreeToLData
 -}
 
-module Parsing.SExprTree.TreeToSExpr (
+module Parsing.LDataTree.TreeToLData (
     expressTokenizedTree
 ) where
 
@@ -16,15 +16,15 @@ import ParserStatus (
   isParserStatusError
   )
 
-import Parsing.SExprTree (
-  SExpr(..)
+import Parsing.LDataTree (
+  LData(..)
   )
 
-import Parsing.SExprTree.Status (
-  SExprTree(SExprTree),
-  SExprTreeIn,
-  SExprTreeOut,
-  parseSExpr
+import Parsing.LDataTree.Status (
+  LDataTree(LDataTree),
+  LDataTreeIn,
+  LDataTreeOut,
+  parseLData
   )
 
 import Parsing.Tokenizer (
@@ -33,7 +33,7 @@ import Parsing.Tokenizer (
   )
 
 -- | Parses lists of TokenizedAny, like [1,2,3,4,"Hello!",(+ 4 -2)]
-expressList :: SExprTreeIn -> ([SExpr], ParserStatus)
+expressList :: LDataTreeIn -> ([LData], ParserStatus)
 expressList [] = ([], createParserStatusOk)
 expressList (token:[]) = case expressTokenizedFunc [token] of
   (x, rest, status)
@@ -55,67 +55,67 @@ expressList (_:(token:_)) = case getTokenizerCoordinates token of
     "Unsupported group separator" "(expressList)" ln col)
 
 -- | Parses simple groups of TokenizedAny, like for functions
-expressGroup :: SExprTreeIn -> ([SExpr], ParserStatus)
+expressGroup :: LDataTreeIn -> ([LData], ParserStatus)
 expressGroup list = case expressTokenizedTree list of
   (Nothing, status) -> ([], status)
   (Just x, status)  -> (x, status)
 
 --
-expressTokenizedFunc :: SExprTreeIn -> SExprTreeOut
+expressTokenizedFunc :: LDataTreeIn -> LDataTreeOut
 expressTokenizedFunc [] =
-  (SExprUndefined, [], createParserStatusOk)
+  (LDataUndefined, [], createParserStatusOk)
 -- TokenizedString
 expressTokenizedFunc ((TokenizedString "true" coor):t) =
-  ((SExprBool True coor), t, createParserStatusOk)
+  ((LDataBool True coor), t, createParserStatusOk)
 expressTokenizedFunc ((TokenizedString "false" coor):t) =
-  ((SExprBool False coor), t, createParserStatusOk)
+  ((LDataBool False coor), t, createParserStatusOk)
 expressTokenizedFunc ((TokenizedString x coor):t) =
-  ((SExprSymbol x coor), t, createParserStatusOk)
+  ((LDataSymbol x coor), t, createParserStatusOk)
 -- TokenizedInt
 expressTokenizedFunc ((TokenizedInt x coor):t) =
-  ((SExprInt x coor), t, createParserStatusOk)
+  ((LDataInt x coor), t, createParserStatusOk)
 -- TokenizedFloat
 expressTokenizedFunc ((TokenizedFloat x coor):t) =
-  ((SExprFloat x coor), t, createParserStatusOk)
+  ((LDataFloat x coor), t, createParserStatusOk)
 -- TokenizedLiteral
 expressTokenizedFunc ((TokenizedLiteral x coor):t) =
-  ((SExprString x coor), t, createParserStatusOk)
+  ((LDataString x coor), t, createParserStatusOk)
 -- TokenizedList
 expressTokenizedFunc ((TokenizedList '(' list coor):t) =
   case expressGroup list of
     (output, status)
-      | isParserStatusError status  -> (SExprUndefined, [], status)
+      | isParserStatusError status  -> (LDataUndefined, [], status)
       | otherwise                   ->
-        (SExprGroup output coor, t, createParserStatusOk)
+        (LDataGroup output coor, t, createParserStatusOk)
 expressTokenizedFunc ((TokenizedList '[' list coor):t) =
   case expressList list of
     (output, status)
-      | isParserStatusError status  -> (SExprUndefined, [], status)
+      | isParserStatusError status  -> (LDataUndefined, [], status)
       | otherwise                   ->
-        (SExprList output coor, t, createParserStatusOk)
+        (LDataList output coor, t, createParserStatusOk)
 expressTokenizedFunc ((TokenizedList x _ coor):t) = case coor of
-  (ln, col) -> (SExprUndefined, [], createParserStatusError
+  (ln, col) -> (LDataUndefined, [], createParserStatusError
     ("Unsupported TokenizedList starting with '" ++ [x] ++ "'")
     "(expressTokenizedFunc)" ln col)
 -- TokenizedChar (error)
 expressTokenizedFunc ((TokenizedChar x coor):t) = case coor of
-  (ln, col) -> (SExprUndefined, [], createParserStatusError
+  (ln, col) -> (LDataUndefined, [], createParserStatusError
     ("Unsupported TokenizedChar '" ++ [x] ++ "'")
     "(expressTokenizedFunc)" ln col)
 --
 expressTokenizedFunc (token:t) = case getTokenizerCoordinates token of
-  (ln, col) -> (SExprUndefined, [], createParserStatusError
+  (ln, col) -> (LDataUndefined, [], createParserStatusError
     "Unsupported TokenizedAny" "(expressTokenizedFunc)" ln col)
 
 --
-expressTokenized :: SExprTree
-expressTokenized = SExprTree $ \input ->
+expressTokenized :: LDataTree
+expressTokenized = LDataTree $ \input ->
   expressTokenizedFunc input
 
 --
-expressTokenizedTree :: [TokenizedAny] -> (Maybe [SExpr], ParserStatus)
+expressTokenizedTree :: [TokenizedAny] -> (Maybe [LData], ParserStatus)
 expressTokenizedTree [] = (Just [], createParserStatusOk)
-expressTokenizedTree input = case input `parseSExpr` expressTokenized of
+expressTokenizedTree input = case input `parseLData` expressTokenized of
   (output, rest, status)
     | isParserStatusError status  -> (Nothing, status)
     | otherwise                   -> case expressTokenizedTree rest of
