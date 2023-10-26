@@ -53,5 +53,9 @@
                 exec [Number 1] [] [PushArg 0, Push (Number 1), Push (Op Add), Call, Ret] [] ~?= Right (Number 2)
             , "Test exec with invalid input" ~:
                 exec [Boolean True] [] [PushArg 0, Push (Number 1), Push (Op Add), Call, Ret] [] ~?= Left "Error: invalid operation"
+            , "Test exec with division" ~:
+                exec [Number 2, Number 6] [] [PushArg 0, PushArg 1, Push (Op Div), Call, Ret] [] ~?= Right (Number 3)
+            , "Test exec with condition jump" ~:
+                exec [Boolean True] [] [PushArg 0, JumpIfFalse 2, Push (Number 1), Ret, Push (Number 2), Ret] [] ~?= Right (Number 1)
             ]
 
