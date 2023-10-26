@@ -24,11 +24,20 @@ module Vm
 import Data.Char()
 import Data.Either()
 
+--list avant, string apres
+--head tail :(cons) + autres builtin
+
 data Value = Number Int
             | Boolean Bool
             | Op Operation
-            | Str String
+            | Builtin Builtin
+            | List [Value]
             | Func [Instruction]
+            deriving (Show, Eq)
+
+data Builtin = Head
+            | Tail
+            | Len
             deriving (Show, Eq)
 
 data Operation = Add
@@ -84,6 +93,14 @@ callOp Less (Number x) (Number y) = Right (Boolean(x < y))
 callOp Greater (Number x) (Number y) = Right (Boolean(x > y))
 callOp _ _ _ = Left "Error: invalid operation"
 
+callBuiltin :: Builtin -> Value -> Either String Value
+callBuiltin Head (List (x:_)) = Right x
+callBuiltin Head _ = Left "Error: head of empty list"
+callBuiltin Tail (List (_:xs)) = Right (List xs)
+callBuiltin Tail _ = Left "Error: tail of empty list"
+callBuiltin Len (List xs) = Right (Number (length xs))
+callBuiltin _ _ = Left "Error: invalid builtin"
+
 execFunc :: Args -> Env -> Value -> Stack -> Either String Value
 execFunc args env (Func instr) [] = exec args env instr []
 execFunc _ _ _ _ = Left "Error: invalid function"
@@ -103,12 +120,17 @@ exec args env (PushArg y:ys) stack
   | null args = Left "Error: cannot push argument (empty)"
   | otherwise = exec args env ys ((args !! y):stack)
 exec args env (Push x:xs) stack = exec args env xs (x:stack)
+-------------------------------------------
 exec args env (Call:xs) (Func f:stack) = do
     z <- execFunc stack env (Func f) []
     exec args env xs (z:stack)
 exec args env (Call:xs) (Op op:x:y:stack) = do
     z <- callOp op x y
     exec args env xs (z:stack)
+exec args env (Call:xs) (Builtin bi:x:stack) = do
+    z <- callBuiltin bi x
+    exec args env xs (z:stack)
+-------------------------------------------
 exec _ _ (Ret:_) (x:_) = Right x
 exec args env (JumpIfFalse n:xs) (Boolean False:ys) =
     exec args env (drop n xs) ys
