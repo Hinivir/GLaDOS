@@ -93,15 +93,16 @@ pushFromEnv [] _ = Left "Error: function not found"
 pushFromEnv ((fc, Function instr):xs) str
     | fc == str = Right instr
     | otherwise = pushFromEnv xs str
+pushFromEnv ((_, Var _):xs) str = pushFromEnv xs str
 
 exec :: Args -> Env -> Instructions -> Stack -> Either String Value
 exec args env (PushEnv str:xs) stack = do
     z <- pushFromEnv env str
     exec args env xs (Func z:stack)
-exec args env (PushArg y:ys) stack = exec args env ys ((args !! y):stack)
-exec [] _ (PushArg _:_) _ = Left "Error: cannot push argument (empty)"
+exec args env (PushArg y:ys) stack
+  | null args = Left "Error: cannot push argument (empty)"
+  | otherwise = exec args env ys ((args !! y):stack)
 exec args env (Push x:xs) stack = exec args env xs (x:stack)
-exec _ _ (Push _:_) _ = Left "Error: cannot push argument (empty)"
 exec args env (Call:xs) (Func f:stack) = do
     z <- execFunc stack env (Func f) []
     exec args env xs (z:stack)

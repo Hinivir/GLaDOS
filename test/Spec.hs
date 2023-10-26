@@ -6,14 +6,15 @@
 -}
 
 import Test.HUnit
+
 import TestSExpr (
-  printTreeTests,
   testSExpr,
   testParserToSExprInt,
   testParserToSExprString,
   testParserToSExprList,
   testParserToSExpr
   )
+
 import TestParser (
   testParseChar,
   testParseAnyChar,
@@ -28,6 +29,7 @@ import TestParser (
   testParseList,
   testStringToParser
   )
+
 import TestVm (
   testCallOp,
   testExec
