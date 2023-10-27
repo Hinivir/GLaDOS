@@ -9,6 +9,7 @@ module Vm
     ( Value(..),
         Operation(..),
         Instruction(..),
+        Builtin(..),
         Args,
         Stack,
         Instructions,

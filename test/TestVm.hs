@@ -16,6 +16,7 @@ import Test.HUnit
 import Vm (Value(..),
         Operation(..),
         Instruction(..),
+        Builtin(..),
         callOp,
         exec)
 
@@ -48,6 +49,18 @@ testExec =
             exec [Boolean True] [] [PushArg 0, Push (Number 1), Push (Op Add), Call, Ret] [] ~?= Left "Error: invalid operation"
         , "Test exec with division" ~:
             exec [Number 2, Number 6] [] [PushArg 0, PushArg 1, Push (Op Div), Call, Ret] [] ~?= Right (Number 3)
-        , "Test exec with condition jump" ~:
-            exec [Boolean True] [] [PushArg 0, JumpIfFalse 2, Push (Number 1), Ret, Push (Number 2), Ret] [] ~?= Right (Number 1)
+        , "Test exec des lists" ~:
+            exec [Number 1] [] [Push (List [(Number 1), (Number 2), (Number 3)]), Push (Builtin Tail), Call, Ret] [] ~?= Right (List [(Number 2), (Number 3)])
+        , "Test exec with invalid operation" ~:
+            exec [Boolean True] [] [PushArg 0, Push (Number 1), Push (Op Add), Call, Ret] [] ~?= Left "Error: invalid operation"
+        , "Test exec with empty stack" ~:
+            exec [] [] [Push (Number 1), Push (Op Add), Call, Ret] [] ~?= Left "Invalid instruction"
+        , "Test JumpIfFalse with true condition" ~:
+            exec [] [] [Push (Boolean True), JumpIfFalse 3, Push (Number 1), Call, Ret] [] ~?= Left "Invalid instruction"
+        , "Test JumpIfFalse with false condition" ~:
+            exec [] [] [Push (Boolean False), JumpIfFalse 3, Push (Number 1), Call, Ret] [] ~?= Left "Invalid instruction"
+        , "Test Jump with valid jump" ~:
+            exec [] [] [Push (Number 1), Jump 3, Push (Number 2), Call, Ret] [] ~?= Left "Invalid instruction"
+        , "Test Jump with invalid jump" ~:
+            exec [] [] [Push (Number 1), Jump 3, Push (Number 2), Call, Ret] [] ~?= Left "Invalid instruction"
         ]
