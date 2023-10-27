@@ -8,7 +8,8 @@
 module TestTokenizer
 ( testTokenizerCoordonate,
     testExpressTokenizedFunc,
-    testExpressTokenizedTree
+    testExpressTokenizedTree,
+    testGetLDataCoordinates
 )
 where
 
@@ -17,7 +18,8 @@ import Test.HUnit
 import ParserStatus
 
 import Parsing.LDataTree (
-    LData(..)
+    LData(..),
+    getLDataCoordinates
     )
 
 import Parsing.Tokenizer (
@@ -65,4 +67,18 @@ testExpressTokenizedTree = TestList
     , "Test Multiple Tokens" ~: expressTokenizedTree [TokenizedString "Hello" (1, 2), TokenizedChar ':' (3, 4), TokenizedInt 42 (5, 6)] ~?= (Just [LDataSymbol "Hello" (1, 2), LDataSymbol ":" (3, 4), LDataInt 42 (5, 6)], createParserStatusOk)
     , "Test Error in Input" ~: expressTokenizedTree [TokenizedString "Hello" (1, 2), TokenizedUndefined] ~?= (Nothing, createParserStatusError "Unsupported TokenizedAny" "(expressTokenizedFunc)" 0 0)
     , "Test Nested TokenizedList" ~: expressTokenizedTree [TokenizedList '[' [TokenizedInt 1 (1, 2), TokenizedInt 2 (3, 4)] (5, 6)] ~?= (Nothing,ParserStatusError "Unsupported group separator" "(expressList)" 3 4)
+    ]
+
+testGetLDataCoordinates :: Test
+testGetLDataCoordinates = TestList
+    [ "Test LDataBool coordinates" ~: getLDataCoordinates (LDataBool True (1, 2)) ~?= (1, 2)
+    , "Test LDataInt coordinates" ~: getLDataCoordinates (LDataInt 42 (3, 4)) ~?= (3, 4)
+    , "Test LDataFloat coordinates" ~: getLDataCoordinates (LDataFloat 3.14 (5, 6)) ~?= (5, 6)
+    , "Test LDataString coordinates" ~: getLDataCoordinates (LDataString "Hello" (7, 8)) ~?= (7, 8)
+    , "Test LDataSymbol coordinates" ~: getLDataCoordinates (LDataSymbol "Example" (9, 10)) ~?= (9, 10)
+    , "Test LDataGroup coordinates" ~: getLDataCoordinates (LDataGroup [] (11, 12)) ~?= (11, 12)
+    , "Test LDataList coordinates" ~: getLDataCoordinates (LDataList [] (13, 14)) ~?= (13, 14)
+    , "Test LDataDict coordinates" ~: getLDataCoordinates (LDataDict [] (15, 16)) ~?= (15, 16)
+    , "Test LDataTuple coordinates" ~: getLDataCoordinates (LDataTuple [] (17, 18)) ~?= (17, 18)
+    , "Test LDataUndefined coordinates" ~: getLDataCoordinates LDataUndefined ~?= (0, 0)
     ]

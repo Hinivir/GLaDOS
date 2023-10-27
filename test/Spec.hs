@@ -27,4 +27,6 @@ main = do
     _ <- runTestTT testExpressTokenizedFunc
     putStrLn "Run test for expressTokenizedTree"
     _ <- runTestTT testExpressTokenizedTree
+    putStrLn "Run test for getLDataCoordinates"
+    _ <- runTestTT testGetLDataCoordinates
     return ()
