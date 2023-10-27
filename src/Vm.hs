@@ -14,7 +14,7 @@ module Vm
         Stack,
         Instructions,
         Env,
-        EnvVar(..),
+--        EnvVar(..),
         resInt,
         resBool,
         resOp,
@@ -34,7 +34,7 @@ data Value = Number Int
             | Op Operation
             | Builtin Builtin
             | List [Value]
-            | Func [Instruction]
+            | Func Instructions
             deriving (Show, Eq)
 
 data Builtin = Head
@@ -64,10 +64,7 @@ data Instruction = Push Value
 type Args = [Value]
 type Stack = [Value]
 type Instructions = [Instruction]
-data EnvVar = Var Value
-            | Function Instructions
-            deriving (Show, Eq)
-type Env = [(String, EnvVar)]
+type Env = [(String, Value)]
 
 resInt :: Either String Value -> Int
 resInt (Right (Number x)) = x
@@ -107,17 +104,19 @@ execFunc :: Args -> Env -> Value -> Stack -> Either String Value
 execFunc args env (Func instr) [] = exec args env instr []
 execFunc _ _ _ _ = Left "Error: invalid function"
 
-pushFromEnv :: Env -> String -> Either String Instructions
+pushFromEnv :: Env -> String -> Either String Value
 pushFromEnv [] _ = Left "Error: function not found"
-pushFromEnv ((fc, Function instr):xs) str
-    | fc == str = Right instr
+pushFromEnv ((fc, instr):xs) str
+    | fc == str = Right (instr)
     | otherwise = pushFromEnv xs str
-pushFromEnv ((_, Var _):xs) str = pushFromEnv xs str
+--pushFromEnv ((_, Var _):xs) str = pushFromEnv xs str
 
 exec :: Args -> Env -> Instructions -> Stack -> Either String Value
 exec args env (PushEnv str:xs) stack = do
-    z <- pushFromEnv env str
-    exec args env xs (Func z:stack)
+    case pushFromEnv env str of
+        Right instr -> exec args env xs (instr:stack)
+        Left err -> Left err
+--    exec args env xs (z:stack)
 exec args env (PushArg y:ys) stack
   | null args = Left "Error: cannot push argument (empty)"
   | otherwise = exec args env ys ((args !! y):stack)
