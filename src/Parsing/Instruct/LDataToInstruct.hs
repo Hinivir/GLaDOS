@@ -17,7 +17,15 @@ import ParserStatus (
   )
 
 import Parsing.Instruct (
-  Instruct(..)
+  Instruct(..),
+  Value(..),
+  Operation(..),
+  Instruction(..),
+  Args,
+  Stack,
+  Instructions,
+  EnvVar(..),
+  Env
   )
 
 import Parsing.Instruct.Status (
@@ -33,5 +41,6 @@ import Parsing.LDataTree (
   )
 
 --
-convertLDataToInstruct :: [LData] -> (Maybe [Instruct], ParserStatus)
+convertLDataToInstruct :: [LData] -> (Maybe Instructions, ParserStatus)
+convertLDataToInstruct  = (Just [], createParserStatusOk)
 convertLDataToInstruct _ = (Just [], createParserStatusOk)
