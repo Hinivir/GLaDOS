@@ -14,6 +14,7 @@ module Vm
         Stack,
         Instructions,
         Env,
+        EnvVar(..),
         resInt,
         resBool,
         resOp,

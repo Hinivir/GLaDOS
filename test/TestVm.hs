@@ -17,6 +17,7 @@ import Vm (Value(..),
         Operation(..),
         Instruction(..),
         Builtin(..),
+        EnvVar(..),
         callOp,
         exec)
 
@@ -55,12 +56,18 @@ testExec =
             exec [Boolean True] [] [PushArg 0, Push (Number 1), Push (Op Add), Call, Ret] [] ~?= Left "Error: invalid operation"
         , "Test exec with empty stack" ~:
             exec [] [] [Push (Number 1), Push (Op Add), Call, Ret] [] ~?= Left "Invalid instruction"
-        , "Test JumpIfFalse with true condition" ~:
-            exec [] [] [Push (Boolean True), JumpIfFalse 3, Push (Number 1), Call, Ret] [] ~?= Left "Invalid instruction"
+        , "Test JumpIfFalse with false condition 84" ~:
+            exec [] [] [Push (Boolean False), JumpIfFalse 2, Push (Number 0), Ret, Push (Number 84), Ret] [] ~?= Right (Number 84)
+        , "Test JumpIfFalse with true condition 0" ~:
+            exec [] [] [Push (Boolean True), JumpIfFalse 2, Push (Number 0), Ret, Push (Number 84), Ret] [] ~?= Right (Number 0)
         , "Test JumpIfFalse with false condition" ~:
             exec [] [] [Push (Boolean False), JumpIfFalse 3, Push (Number 1), Call, Ret] [] ~?= Left "Invalid instruction"
-        , "Test Jump with valid jump" ~:
-            exec [] [] [Push (Number 1), Jump 3, Push (Number 2), Call, Ret] [] ~?= Left "Invalid instruction"
         , "Test Jump with invalid jump" ~:
             exec [] [] [Push (Number 1), Jump 3, Push (Number 2), Call, Ret] [] ~?= Left "Invalid instruction"
+        , "Test Jump with valid jump" ~:
+            exec [] [] [Push (Number 1), Jump 2, Push (Number 2), Call, Ret] [] ~?= Right (Number 1)
+        , "Test Factorial" ~:
+            exec [] [("Fact", Function [Push (Number 0), Ret])] [PushEnv "Fact", Call, Ret] [] ~?= Right (Number 0)
+        , "Test Factorial 2" ~:
+            exec [] [("Fact", Function [Push (Number 2), Ret])] [PushEnv "Fact", Call, Ret] [] ~?= Right (Number 2)
         ]
