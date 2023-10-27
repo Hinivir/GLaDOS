@@ -73,6 +73,7 @@ main = do
   _ <- runTestTT testParserToSExprList
   putStrLn "Run test for Parser to SExpr"
   _ <- runTestTT testParserToSExpr
+  -- testVm
   putStrLn "Run test for the Vm callOp"
   _ <- runTestTT testCallOp
   putStrLn "Run test for the Vm exec "
