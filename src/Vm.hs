@@ -14,7 +14,6 @@ module Vm
         Stack,
         Instructions,
         Env,
---        EnvVar(..),
         resInt,
         resBool,
         resOp,
@@ -112,7 +111,7 @@ pushFromEnv ((fc, instr):xs) str
 --pushFromEnv ((_, Var _):xs) str = pushFromEnv xs str
 
 exec :: Args -> Env -> Instructions -> Stack -> Either String Value
-exec args env (PushEnv str:xs) stack = do
+exec args env (PushEnv str:xs) stack =
     case pushFromEnv env str of
         Right instr -> exec args env xs (instr:stack)
         Left err -> Left err
