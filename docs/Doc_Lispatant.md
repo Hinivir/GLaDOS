@@ -1,23 +1,16 @@
-# BNF documentation
+# Documentation about Lispatant
 
 ---  
 
 Récap des informations sur le Lispatant
 ```
-Print => lipsaid
-Return => ret
-Les types (d'un point de vue animalier) => int & uint, bool, str, float ?, char, decim
+Print: lipsaid
+Return: ret
+Les types: int & uint, bool, str, char, decim
 List [int]
 Func lipdo _(création d'un warning sans lipdo ?)_
 Dico [Int, Str]
-
-On évite for, while, ...
-
-Le logo de notre langage ? "Gros L avec un petit + dans un losange" selon Virgile
-"Lip avec le . du i en + dans un losange" selon Damien
-Une tortue carré ? Un rubik's cube ? Une valise ?
-"Notre langage, lent comme une tortue"
-
+Pas de for ou de while
 Fichier => .lip
 ```
 
