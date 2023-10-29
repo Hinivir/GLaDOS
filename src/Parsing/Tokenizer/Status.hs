@@ -140,7 +140,7 @@ listUniquePair = listUniquePairStart ++ listUniquePairEnd
 
 -- | Linebreaks
 listUniqueEnd :: [Char]
-listUniqueEnd = "\n|"
+listUniqueEnd = "\n|;"
 
 -- | Snitches are used to ignore linebreaks (listUniqueEnd)
 listUniqueSnitch :: [Char]
