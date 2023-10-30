@@ -5,36 +5,30 @@
 -- Parsing/InstructTree/LDataToInstruct
 -}
 
-module Parsing.Instruct.LDataToInstruct (
-  convertLDataToInstruct
-) where
+module Parsing.Instruct.LDataToInstruct
+  (
+    convertLDataToInstruct
+  ) where
 
-import ParserStatus (
-  ParserStatus (ParserStatusError),
-  createParserStatusError,
-  createParserStatusOk,
-  isParserStatusError
+import ParserStatus
+  (
+    createParserStatusOk,
+    createParserStatusError,
+    ParserStatus
   )
 
-import Parsing.Instruct (
-  Instruct(..),
-  Value(..),
-  Operation(..),
-  Instruction(..),
-  Instructions,
-  Env,
+import Parsing.Instruct
+  (
+    Value(..),
+    Operation(..),
+    Instruction(..),
+    Instructions,
+    Env
   )
 
-import Parsing.Instruct.Status (
-  InstructTree(InstructTree),
-  InstructTreeIn,
-  InstructTreeOut,
-  parseInstruct
-  )
-
-import Parsing.LDataTree (
-  LData(..),
-  getLDataCoordinates
+import Parsing.LDataTree
+  (
+    LData(..),
   )
 
 ldataToValue :: [LData] -> Value

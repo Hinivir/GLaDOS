@@ -14,12 +14,9 @@ import Parsing.Tokenizer (
   )
 
 import Parsing.Tokenizer.Status (
-  listUnique,
-  listUniqueEnd,
-  listUniquePair,
-  listUniquePairEnd,
   listUniquePairStart,
-  listUniqueSnitch,
+  listUniquePairEnd,
+  listUniqueEnd,
   isUniquePair
   )
 

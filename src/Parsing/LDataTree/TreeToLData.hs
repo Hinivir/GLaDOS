@@ -10,23 +10,12 @@ module Parsing.LDataTree.TreeToLData (
     expressTokenizedFunc
 ) where
 
-import ParserStatus (
-  ParserStatus,
-  createParserStatusError,
-  createParserStatusOk,
-  isParserStatusError
-  )
-
 import ParserStatus
   (
-    ParserStatus (ParserStatusError, ParserStatusOK),
-    createParserStatusError,
-    createParserStatusErrorGeneric,
-    createParserStatusErrorSimple,
     createParserStatusOk,
-    interpretParserStatus,
-    isParserStatusError,
-    isParserStatusOk
+    createParserStatusError,
+    ParserStatus(..),
+    isParserStatusError
   )
 
 import Parsing.LDataTree (
