@@ -12,9 +12,9 @@ module Main
 import System.Exit
 import System.IO
 
-import Parsing (parsingToLDataTree)
-import Parsing.LDataTree (LData(..))
+import Parsing (parsingToInstruct)
 import ParserStatus (ParserStatus(..))
+import Parsing.Instruct (Instructions)
 
 -- | Function that take a String and print it
 -- | Print the String and exit with an error
@@ -35,12 +35,12 @@ readLines = do
 
 -- | Function that take a Maybe [LData] and a ParserStatus
 -- | Print the result of the parsing
-printResult:: (Maybe [LData], ParserStatus) -> IO ()
+printResult:: (Maybe Instructions, ParserStatus) -> IO ()
 printResult (Nothing, ParserStatusOK) = errorExit "No input"
 printResult (Nothing, ParserStatusError _ errorMsg line col) =
   errorExit $ "Error at line " ++ show line ++ ", column "
   ++ show col ++ ": " ++ show errorMsg
-printResult (Just ldata, _) = putStrLn (show ldata)
+printResult (Just instruct, _) = print instruct
 
 -- | The main function
 -- | Read the lines, parse them and print the result
@@ -51,4 +51,4 @@ main = do
     then errorExit "No input"
     else do
       linesTable <- readLines
-      printResult (parsingToLDataTree linesTable)
+      printResult (parsingToInstruct linesTable)

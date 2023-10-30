@@ -8,7 +8,8 @@
 module Parsing (
   parsingToTokenList,
   parsingToTokenTree,
-  parsingToLDataTree
+  parsingToLDataTree,
+  parsingToInstruct
 ) where
 
 import ParserStatus (
@@ -22,7 +23,7 @@ import Parsing.LDataTree (
   )
 
 import Parsing.Instruct (
-  Instruct
+  Instructions
   )
 
 import Parsing.Instruct.LDataToInstruct (
@@ -72,7 +73,7 @@ parsingToLDataTree input = case parsingToTokenTree input of
         "(parsingToLDataTree) parsingToTokenTree returned Nothing")
       Just x                      -> expressTokenizedTree x
 
-parsingToInstruct :: [String] -> (Maybe [Instruct], ParserStatus)
+parsingToInstruct :: [String] -> (Maybe Instructions, ParserStatus)
 parsingToInstruct input = case parsingToLDataTree input of
   (output, status)
     | isParserStatusError status  -> (Nothing, status)

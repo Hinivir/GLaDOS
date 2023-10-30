@@ -47,7 +47,7 @@ createInstructTreeOutOKForce a b = (a, b, createParserStatusOk)
 --
 createInstructTreeOutOK :: Instruct -> InstructTreeIn -> InstructTreeOut
 createInstructTreeOutOK a [] = createInstructTreeOutOKForce a []
-createInstructTreeOutOK a (h:t) = createInstructTreeOutOKForce a t
+createInstructTreeOutOK a (_:t) = createInstructTreeOutOKForce a t
 
 --
 createInstructTreeOutError :: (Int, Int) -> String -> String -> InstructTreeOut
@@ -56,7 +56,7 @@ createInstructTreeOutError input name info = case input of
     (InstructUndefined, [], createParserStatusError name info ln col)
 
 --
-errorContent :: (InstructTreeOut) -> Instruct -> InstructTreeOut
+errorContent :: InstructTreeOut -> Instruct -> InstructTreeOut
 errorContent (_, input, status) content = (content ,input, status)
 
 -- FUNCTIONS --

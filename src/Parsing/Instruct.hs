@@ -22,6 +22,7 @@ module Parsing.Instruct (
 -- | The Instruct data
 data Instruct = InstructUndefined
   | InstructLipBe String [Instruct]
+  | InstructLipDo String [Args] [Instruct]
   deriving (Eq, Show)
 
 data Value = Number Int
