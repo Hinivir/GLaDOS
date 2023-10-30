@@ -31,6 +31,7 @@ data Value = Number Int
             | Float Float
             | Op Operation
             | Func [Instruction]
+            | ValueUndefined
             deriving (Show, Eq)
 
 data Operation = Add

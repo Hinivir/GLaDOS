@@ -14,7 +14,7 @@ import System.IO
 
 import Parsing (parsingToInstruct)
 import ParserStatus (ParserStatus(..))
-import Parsing.Instruct (Instructions)
+import Parsing.Instruct (Instructions, Env)
 
 -- | Function that take a String and print it
 -- | Print the String and exit with an error
@@ -35,12 +35,14 @@ readLines = do
 
 -- | Function that take a Maybe [LData] and a ParserStatus
 -- | Print the result of the parsing
-printResult:: (Maybe Instructions, ParserStatus) -> IO ()
-printResult (Nothing, ParserStatusOK) = errorExit "No input"
-printResult (Nothing, ParserStatusError _ errorMsg line col) =
+printResult:: (Maybe Instructions, Env, ParserStatus) -> IO ()
+printResult (Nothing, _, ParserStatusOK) = errorExit "No input"
+printResult (Nothing, _, ParserStatusError _ errorMsg line col) =
   errorExit $ "Error at line " ++ show line ++ ", column "
   ++ show col ++ ": " ++ show errorMsg
-printResult (Just instruct, _) = print instruct
+printResult (Just instruct, env,_) = do
+  print instruct
+  print env
 
 -- | The main function
 -- | Read the lines, parse them and print the result
