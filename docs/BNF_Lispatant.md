@@ -4,7 +4,7 @@ Please find here the **Backus-Naur Form** (BNF) of our **Lispatant** language.
 This document explains the grammar of our language.
 As an example, you can find the BNF of C [here]()
 
-```BMF
+```BNF
 <argument-list> ::= <literal> (<literal>)*
 
 <assignment> ::= "Lipbe" <identifier> ":" <literal>
