@@ -88,3 +88,84 @@ Lipdo main:
     foo \
       / 2
 ```
+
+Voici tous les tests pour le Lispatant:
+
+```python
+Lipdo main:
+    (2 * 3) + (10 div 2)
+
+
+Lipdo main:
+    (2 * 5) == (11 - 1)
+
+
+Lipdo main:
+    1 < (10 mod 3)
+
+
+Lipdo main:
+    10 div 2
+
+
+Lipdo main:
+    foo * 2
+Lipdo fact x:
+  if (x == 1)
+    1
+  else
+    x * (fact (x - 1))
+
+
+Lipdo main:
+  fact (10)
+Lipbe foo:
+  42
+
+
+Lipdo main:
+  if (foo < 10)
+    foo * 3
+  else
+    foo / 2
+Lipdo add a b:
+    a + b
+
+
+Lipdo main:
+    add 3 4
+
+
+Lipdo main:
+    if (1 == 2)
+        True
+    else
+        False
+
+
+Lipdo main:
+    if (1 != 2)
+        True
+    else
+        False
+Lipbe foo:
+  42
+
+
+Lipdo main:
+  if (foo < 10)
+    foo * 3
+  else
+    foo / 2
+Lipdo sup a b:
+    if (a == b):
+        False
+    if (a < b):
+        False
+    else:
+        True
+
+
+Lipdo main:
+    10 sup -2
+```
