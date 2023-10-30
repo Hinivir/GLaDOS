@@ -2,9 +2,11 @@
 
 Please find here the **Backus-Naur Form** (BNF) of our **Lispatant** language.
 This document explains the grammar of our language.
-As an example, you can find the BNF of C [here]()
+As an example, you can find the BNF of C [here](BNF_C.md)
 
 ```BNF
+```
+
 <argument-list> ::= <literal> (<literal>)*
 
 <assignment> ::= "Lipbe" <identifier> ":" <literal>
@@ -13,25 +15,39 @@ As an example, you can find the BNF of C [here]()
 
 <condition> ::= <identifier> <comparison-operator> <literal>
 
-#<comparison-operator> ::= "==" | "<" | ">" | "<=" | ">="
+#<comparison-operator> ::= "==" 
+                        | "<" 
+                        | ">" 
+                        | "<=" 
+                        | ">="
 
 <digit> ::= "0"-"9"
 
-<expression> ::= (<function-definition> | <function-call> | <assignment> | <if-statement>)
+<expression>  ::= <value>
+              | <identifier>
+              | "(" <expression> ")"
+              | <expression> <operator> <expression>
+              | "if" "(" <expression> ")" <expression> "else" <expression>
 
 <function-call> ::= <identifier> (<argument-list>)*
 
 <function-definition> ::= "Lipdo" <identifier> (<parameter-list>)* ":" <expression>
 
-<identifier> ::= (<letter> | "_") (<letter> | <digit> | "_")*
+<identifier> ::= (<letter> 
+                | "_") (<letter> 
+                | <digit> 
+                | "_")*
 
 <if-statement> ::= "if" <condition> <expression> ("else" <expression>)?
 
 <integer> ::= (0-9)+
 
-<letter> ::= "a"-"z" | "A"-"Z"
+<letter> ::= "a"-"z" 
+            | "A"-"Z"
 
-<literal> ::= <integer> | <string> | <identifier>
+<literal> ::= <integer> 
+            | <string> 
+            | <identifier>
 
 <parameter-list> ::= <identifier> (<identifier>)*
 
@@ -44,4 +60,3 @@ As an example, you can find the BNF of C [here]()
 <unary-operator> ::= +
                    | -
                    | *
-```
