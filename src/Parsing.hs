@@ -23,7 +23,8 @@ import Parsing.LDataTree (
   )
 
 import Parsing.Instruct (
-  Instructions
+  Instructions,
+  Env
   )
 
 import Parsing.Instruct.LDataToInstruct (
@@ -73,12 +74,12 @@ parsingToLDataTree input = case parsingToTokenTree input of
         "(parsingToLDataTree) parsingToTokenTree returned Nothing")
       Just x                      -> expressTokenizedTree x
 
-parsingToInstruct :: [String] -> (Maybe Instructions, ParserStatus)
+parsingToInstruct :: [String] -> (Maybe Instructions, Env, ParserStatus)
 parsingToInstruct input = case parsingToLDataTree input of
   (output, status)
-    | isParserStatusError status  -> (Nothing, status)
+    | isParserStatusError status  -> (Nothing, [], status)
     | otherwise                   -> case output of
-      Nothing                     -> (Nothing, createParserStatusErrorSimple
+      Nothing                     -> (Nothing, [], createParserStatusErrorSimple
         "Invalid output"
         "(parsingToInstruct) parsingToLDataTree returned Nothing")
-      Just x                      -> convertLDataToInstruct x
+      Just x                      -> convertLDataToInstruct x []
