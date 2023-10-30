@@ -5,25 +5,47 @@ This document explains the grammar of our language.
 As an example, you can find the BNF of C [here](BNF_C.md)
 
 ```BNF
-```
-
 <argument-list> ::= <literal> (<literal>)*
 
 <assignment> ::= "Lipbe" <identifier> ":" <literal>
 
-<assignment-operator> ::= =
-
-<condition> ::= <identifier> <comparison-operator> <literal>
-
-#<comparison-operator> ::= "==" 
+<assignment-operator> ::= "+" 
+                        | "-" 
+                        | "*" 
+                        | "/" 
+                        | "==" 
+                        | "!=" 
                         | "<" 
                         | ">" 
                         | "<=" 
                         | ">="
 
-<digit> ::= "0"-"9"
+<block> ::= <instruction>* "Lipdo" <identifier> ":"
 
-<expression>  ::= <value>
+<condition> ::= <identifier> <comparison-operator> <literal>
+
+<digit> ::= "0"-"9" #???
+
+<integer> ::= (0-9)+ #???
+
+<identifier> ::= (<letter> 
+                | "_") (<letter> 
+                | <digit> 
+                | "_")*
+
+<letter> ::= "a"-"z" 
+            | "A"-"Z"
+
+<letter_digit> ::= <letter> 
+                | <digit>
+
+<number> ::= <integer>
+
+<value> ::= <number>
+              | "True"
+              | "False"
+
+<expression> ::= <value>
               | <identifier>
               | "(" <expression> ")"
               | <expression> <operator> <expression>
@@ -33,17 +55,10 @@ As an example, you can find the BNF of C [here](BNF_C.md)
 
 <function-definition> ::= "Lipdo" <identifier> (<parameter-list>)* ":" <expression>
 
-<identifier> ::= (<letter> 
-                | "_") (<letter> 
-                | <digit> 
-                | "_")*
-
 <if-statement> ::= "if" <condition> <expression> ("else" <expression>)?
 
-<integer> ::= (0-9)+
-
-<letter> ::= "a"-"z" 
-            | "A"-"Z"
+<instruction> ::= "Lipdo" <identifier> ":" <block>
+              | "Lipbe" <identifier> ":" <expression>
 
 <literal> ::= <integer> 
             | <string> 
@@ -53,10 +68,7 @@ As an example, you can find the BNF of C [here](BNF_C.md)
 
 <program> ::= (<expression>)*
 
-<type-specifier> ::= char
-                   | int
-                   | str
-
-<unary-operator> ::= +
-                   | -
-                   | *
+//<type-specifier> ::= char
+//                   | int
+//                   | str
+```
