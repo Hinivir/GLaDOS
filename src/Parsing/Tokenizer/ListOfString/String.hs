@@ -10,7 +10,6 @@ module Parsing.Tokenizer.ListOfString.String (
 ) where
 
 import ParserStatus (
-  ParserStatus,
   isParserStatusError
   )
 
@@ -41,7 +40,7 @@ tokenizeStringSegChain input c ((TokenizedString x _), input2, status)
   | otherwise                   =
     createTokenizerOutOKForce
       (TokenizedString (c:x) (signTokenized input)) input2
-tokenizeStringSegChain input c (x, input2, status)
+tokenizeStringSegChain input _ (x, input2, status)
   | isParserStatusError status  = (x, input2, status)
   | otherwise                   =
     createTokenizerOutError input "Invalid output"

@@ -51,20 +51,17 @@ import Parsing.Tokenizer.ListOfString.String (
 --
 tokenizeLiteralSegChain ::
   TokenizerIn -> Char -> TokenizerIn -> Char -> TokenizerOut -> TokenizerOut
-tokenizeLiteralSegChain start mark input c
-  ((TokenizedLiteral x _), input2, status)
-  | isParserStatusError status  =
-    createTokenizerOutOKForce
-      (TokenizedLiteral [c] (signTokenized input)) input2
-  | otherwise                   =
-    createTokenizerOutOKForce
-      (TokenizedLiteral (c:x) (signTokenized input)) input2
-tokenizeLiteralSegChain start mark input c (x, input2, status)
-  | isParserStatusError status  = (x, input2, status)
-  | otherwise                   =
+tokenizeLiteralSegChain _ _ input c (TokenizedLiteral x _, input2, status)
+  | isParserStatusError status =
+    createTokenizerOutOKForce (TokenizedLiteral (c : x) (signTokenized input)) input2
+  | otherwise =
+    createTokenizerOutOKForce (TokenizedLiteral (c : x) (signTokenized input)) input2
+tokenizeLiteralSegChain _ _ input _ (x, input2, status)
+  | isParserStatusError status = (x, input2, status)
+  | otherwise =
     createTokenizerOutError input "Invalid output"
-      ("(tokenizeLiteral) " ++
-      "tokenizeLiteral didn't return TokenizedLiteral")
+      "(tokenizeLiteral) tokenizeLiteral didn't return TokenizedLiteral"
+
 
 --
 tokenizeLiteralSeg ::
@@ -125,18 +122,19 @@ tokenizeAny = Tokenizer $ \input ->
   tokenizeAnySeg input (headTokenizerIn input)
 
 tokenizeListOfStringSub :: TokenizerOut -> (Maybe [TokenizedAny], ParserStatus)
-tokenizeListOfStringSub (TokenizedUndefined, output, status)
-  | isParserStatusError status  = (Nothing, status)
-  | hasTokenizerInEnded output  = (Just [], status)
+tokenizeListOfStringSub (TokenizedUndefined, output, outerStatus)
+  | isParserStatusError outerStatus  = (Nothing, outerStatus)
+  | hasTokenizerInEnded output  = (Just [], outerStatus)
   | otherwise                   = case tokenizeListOfStringIn output of
-    (Nothing, status)   -> (Nothing, status)
-    (Just list, status) -> (Just list, status)
-tokenizeListOfStringSub (x, output, status)
-  | isParserStatusError status  = (Nothing, status)
-  | hasTokenizerInEnded output  = (Just [x], status)
+    (Nothing, innerStatus)   -> (Nothing, innerStatus)
+    (Just list, innerStatus) -> (Just list, innerStatus)
+tokenizeListOfStringSub (x, output, outerStatus)
+  | isParserStatusError outerStatus  = (Nothing, outerStatus)
+  | hasTokenizerInEnded output  = (Just [x], outerStatus)
   | otherwise                   = case tokenizeListOfStringIn output of
-    (Nothing, status)   -> (Nothing, status)
-    (Just list, status) -> (Just (x:list), status)
+    (Nothing, innerStatus)   -> (Nothing, innerStatus)
+    (Just list, innerStatus) -> (Just (x:list), innerStatus)
+
 
 --
 tokenizeListOfStringSeg :: TokenizerIn -> (Maybe [TokenizedAny], ParserStatus)

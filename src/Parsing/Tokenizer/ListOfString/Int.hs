@@ -10,7 +10,6 @@ module Parsing.Tokenizer.ListOfString.Int (
 ) where
 
 import ParserStatus (
-  ParserStatus,
   isParserStatusError
   )
 
@@ -32,7 +31,7 @@ import Parsing.Tokenizer.Status (
   )
 
 import Parsing.Tokenizer (
-  TokenizedAny(TokenizedString, TokenizedInt)
+  TokenizedAny(TokenizedInt)
   )
 
 import Parsing.Tokenizer.ListOfString.String (
@@ -54,7 +53,7 @@ charToInt _ = 0
 
 tokenizeUIntSegChainOnError :: TokenizerIn -> Char -> (TokenizerOut, Int) ->
   (TokenizerOut, Int)
-tokenizeUIntSegChainOnError input c (((TokenizedInt x _), input2, _), _)
+tokenizeUIntSegChainOnError input c (((TokenizedInt _ _), input2, _), _)
   | (headOfShiftedTokenizerIn input) `elem` listSymbols =
     (createTokenizerOutError (shiftedTokenizerIn input)
       ("Unreconized Symbol '" ++ [headOfShiftedTokenizerIn input] ++ "'")
@@ -77,7 +76,7 @@ tokenizeUIntSegChain input c (((TokenizedInt x coor), input2, status), tilt)
     (createTokenizerOutOKForce
       (TokenizedInt ((charToInt c) * tilt + x) (signTokenized input)) input2,
         tilt * 10)
-tokenizeUIntSegChain input c ((x, input2, status), tilt)
+tokenizeUIntSegChain input _ ((x, input2, status), tilt)
   | isParserStatusError status  = ((x, input2, status), tilt)
   | otherwise                   =
     (createTokenizerOutError input "Invalid output"

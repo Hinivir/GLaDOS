@@ -38,7 +38,7 @@ import Parsing.Tokenizer (
 expressList :: LDataTreeIn -> ([LData], ParserStatus)
 expressList [] = ([], createParserStatusOk)
 expressList (token:[]) = case expressTokenizedFunc [token] of
-  (x, rest, status)
+  (x, _, status)
     | isParserStatusError status  -> ([], status)
     | otherwise                   -> ([x], status)
 expressList (_:((TokenizedChar ',' coor):[])) = case coor of
@@ -46,7 +46,7 @@ expressList (_:((TokenizedChar ',' coor):[])) = case coor of
     "Trailing separator ','" "(expressList)" ln col)
 expressList (token:((TokenizedChar ',' _):t)) =
   case expressTokenizedFunc [token] of
-    (x, rest, status)
+    (x, _, status)
       | isParserStatusError status      -> ([], status)
       | otherwise                       -> case expressList t of
         (list, status2)
@@ -102,19 +102,19 @@ expressTokenizedFunc ((TokenizedList '[' list coor):t) =
       | isParserStatusError status  -> (LDataUndefined, [], status)
       | otherwise                   ->
         (LDataList output coor, t, createParserStatusOk)
-expressTokenizedFunc ((TokenizedList x _ coor):t) = case coor of
+expressTokenizedFunc ((TokenizedList x _ coor):_) = case coor of
   (ln, col) -> (LDataUndefined, [], createParserStatusError
     ("Unsupported TokenizedList starting with '" ++ [x] ++ "'")
     "(expressTokenizedFunc)" ln col)
 -- TokenizedChar
 expressTokenizedFunc ((TokenizedChar ':' coor):t) =
   ((LDataSymbol ":" coor), t, createParserStatusOk)
-expressTokenizedFunc ((TokenizedChar x coor):t) = case coor of
+expressTokenizedFunc ((TokenizedChar x coor):_) = case coor of
   (ln, col) -> (LDataUndefined, [], createParserStatusError
     ("Unsupported TokenizedChar '" ++ [x] ++ "'")
     "(expressTokenizedFunc)" ln col)
 --
-expressTokenizedFunc (token:t) = case getTokenizerCoordinates token of
+expressTokenizedFunc (token:_) = case getTokenizerCoordinates token of
   (ln, col) -> (LDataUndefined, [], createParserStatusError
     "Unsupported TokenizedAny" "(expressTokenizedFunc)" ln col)
 

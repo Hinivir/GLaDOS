@@ -47,7 +47,7 @@ createLDataTreeOutOKForce a b = (a, b, createParserStatusOk)
 --
 createLDataTreeOutOK :: LData -> LDataTreeIn -> LDataTreeOut
 createLDataTreeOutOK a [] = createLDataTreeOutOKForce a []
-createLDataTreeOutOK a (h:t) = createLDataTreeOutOKForce a t
+createLDataTreeOutOK a (_:t) = createLDataTreeOutOKForce a t
 
 --
 createLDataTreeOutError :: (Int, Int) -> String -> String -> LDataTreeOut

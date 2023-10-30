@@ -59,14 +59,14 @@ data Tokenizer =
 headTokenizerIn :: TokenizerIn -> Char
 headTokenizerIn ([], _, _) = ' '
 headTokenizerIn (([]:_), _, _) = '\n'
-headTokenizerIn (((c:_):_), ln, col) = c
+headTokenizerIn (((c:_):_), _, _) = c
 
 --
 shiftedTokenizerIn :: TokenizerIn -> TokenizerIn
 shiftedTokenizerIn ([], ln, col) = ([], ln, col)
-shiftedTokenizerIn (([]:rem), _, col) = (rem, 1, col + 1)
-shiftedTokenizerIn (((_:[]):rem), _, col) = (([]:rem), 1, col)
-shiftedTokenizerIn (((_:t):rem), ln, col) = ((t:rem), ln + 1, col)
+shiftedTokenizerIn (([]:remaining), _, col) = (remaining, 1, col + 1)
+shiftedTokenizerIn (((_:[]):remaining), _, col) = (([]:remaining), 1, col)
+shiftedTokenizerIn (((_:t):remaining), ln, col) = ((t:remaining), ln + 1, col)
 
 --
 headOfShiftedTokenizerIn :: TokenizerIn -> Char

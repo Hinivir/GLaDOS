@@ -48,7 +48,7 @@ isClosingPair _ _ = False
 
 --
 tokenizeListToTreeInRec :: TokenListInOutput -> TokenListIn
-tokenizeListToTreeInRec (Just output, rest, status) (h:t) sep =
+tokenizeListToTreeInRec (Just output, rest, status) (h:_) _ =
   (Just (h:output), rest, status)
 tokenizeListToTreeInRec (_, _, status) _ _ = (Nothing, [], status)
 
@@ -57,7 +57,7 @@ tokenizeListToTreeInSegPair :: TokenListIn
 tokenizeListToTreeInSegPair ((TokenizedChar c (ln, col)):t) sep =
   case (TokenizedChar c (ln, col)) of
     h -> case tokenizeListToTreeIn t (Just h) of
-      (Just output, rest, status) ->
+      (Just output, rest, _) ->
           tokenizeListToTreeIn ((TokenizedList c output (ln, col):rest)) sep
       output                      -> output
 
@@ -115,7 +115,7 @@ tokenizeListToTree :: [TokenizedAny] -> (Maybe [TokenizedAny], ParserStatus)
 tokenizeListToTree [] = (Just [], createParserStatusOk)
 tokenizeListToTree input = case tokenizeListToTreeIn input Nothing of
   (output, [], status)              -> (tokenizeListToTreeLine output, status)
-  (output, rest, status)            -> case tokenizeListToTree rest of
+  (output, rest, _)            -> case tokenizeListToTree rest of
     (Nothing, status2)              -> (Nothing, status2)
     (Just output2, status2)
       | isParserStatusError status2 -> (Nothing, status2)
