@@ -10,7 +10,8 @@ module Parsing.Tokenizer.ListToTree (
 ) where
 
 import Parsing.Tokenizer (
-  TokenizedAny(TokenizedChar, TokenizedLine, TokenizedList)
+  TokenizedAny(TokenizedChar, TokenizedLine, TokenizedList),
+  getTokenizerCoordinates
   )
 
 import Parsing.Tokenizer.Status (
@@ -23,6 +24,7 @@ import Parsing.Tokenizer.Status (
 import ParserStatus (
   ParserStatus,
   createParserStatusError,
+  createParserStatusErrorSimple,
   createParserStatusOk,
   isParserStatusError
   )
@@ -60,6 +62,13 @@ tokenizeListToTreeInSegPair ((TokenizedChar c (ln, col)):t) sep =
       (Just output, rest, _) ->
           tokenizeListToTreeIn ((TokenizedList c output (ln, col):rest)) sep
       output                      -> output
+tokenizeListToTreeInSegPair (x:_) _ =
+  case getTokenizerCoordinates x of
+    (ln, col) -> (Nothing, [], createParserStatusError
+      "Unhandled case" "(tokenizeListToTreeInSegPair)" ln col)
+tokenizeListToTreeInSegPair _ _ =
+  (Nothing, [], createParserStatusErrorSimple
+    "Unhandled case" "(tokenizeListToTreeInSegPair)")
 
 --
 tokenizeListToTreeInSeg :: TokenListIn
