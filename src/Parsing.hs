@@ -79,7 +79,8 @@ parsingToInstruct input = case parsingToLDataTree input of
   (output, status)
     | isParserStatusError status  -> (Nothing, [], status)
     | otherwise                   -> case output of
-      Nothing                     -> (Nothing, [], createParserStatusErrorSimple
+      Nothing                     -> (Nothing, [],
+                                    createParserStatusErrorSimple
         "Invalid output"
         "(parsingToInstruct) parsingToLDataTree returned Nothing")
       Just x                      -> convertLDataToInstruct x []

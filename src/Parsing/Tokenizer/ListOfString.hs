@@ -53,9 +53,11 @@ tokenizeLiteralSegChain ::
   TokenizerIn -> Char -> TokenizerIn -> Char -> TokenizerOut -> TokenizerOut
 tokenizeLiteralSegChain _ _ input c (TokenizedLiteral x _, input2, status)
   | isParserStatusError status =
-    createTokenizerOutOKForce (TokenizedLiteral (c : x) (signTokenized input)) input2
+    createTokenizerOutOKForce (TokenizedLiteral (c : x)
+      (signTokenized input)) input2
   | otherwise =
-    createTokenizerOutOKForce (TokenizedLiteral (c : x) (signTokenized input)) input2
+    createTokenizerOutOKForce (TokenizedLiteral (c : x)
+      (signTokenized input)) input2
 tokenizeLiteralSegChain _ _ input _ (x, input2, status)
   | isParserStatusError status = (x, input2, status)
   | otherwise =
