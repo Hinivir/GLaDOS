@@ -3,9 +3,9 @@
 The repository for the GLaDOS project.  
   
 <div id="Illustration_Haskell" style="display: flex;">  
-  <img src="assets/Epitech_logo.png" alt="logo Epitech" width="120" height="120" style="margin-right: 50px;">  
-  <img src="assets/Haskell_logo.webp" alt="logo Haskell" width="120" height="120" style="margin-right: 50px;">  
-  <img src="assets/GLaDOS_logo.webp" alt="logo Haskell" width="120" height="120" style="margin-right: 50px;">  
+  <img src="../assets/Epitech_logo.png" alt="logo Epitech" width="120" height="120" style="margin-right: 50px;">  
+  <img src="../assets/Haskell_logo.webp" alt="logo Haskell" width="120" height="120" style="margin-right: 50px;">  
+  <img src="../assets/GLaDOS_logo.webp" alt="logo Haskell" width="120" height="120" style="margin-right: 50px;">  
 </div>  
   
 ---  
