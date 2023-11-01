@@ -86,6 +86,9 @@ testExec =
       "Test exec with valid environment variable"
         ~: exec [] [("val", Number 1)] [PushEnv "val", Ret] []
         ~?= Right (Number 1),
+      "Test exec with invalid environment variable"
+        ~: exec [] [("valu", Number 1)] [PushEnv "val", Ret] []
+        ~?= Left "Error: unknown variable or function in env: val",
       "Test exec with function call from environment variable"
         ~: exec [] [("func", Func [Push (Number 0), Ret])] [PushEnv "func", Call, Ret] []
         ~?= Right (Number 0)

@@ -104,7 +104,7 @@ execFunc args env (Func instr) [] = exec args env instr []
 execFunc _ _ _ _ = Left "Error: invalid function"
 
 pushFromEnv :: Env -> String -> Either String Value
-pushFromEnv [] _ = Left "Error: function not found"
+pushFromEnv [] v = Left ("Error: unknown variable or function in env: " ++ v)
 pushFromEnv ((fc, instr):xs) str
     | fc == str = Right (instr)
     | otherwise = pushFromEnv xs str
