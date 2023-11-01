@@ -23,7 +23,7 @@ import Parsing.Tokenizer.Status (
   headTokenizerIn,
   headOfShiftedTokenizerIn,
   listSymbols,
-  listSymbolsStart,
+  listOperators,
   listNumDigits,
   shiftedTokenizerIn,
   signTokenized,
@@ -31,11 +31,11 @@ import Parsing.Tokenizer.Status (
   )
 
 import Parsing.Tokenizer (
-  TokenizedAny(TokenizedInt)
+  TokenizedAny(TokenizedInt, TokenizedLine)
   )
 
-import Parsing.Tokenizer.ListOfString.String (
-  tokenizeString
+import Parsing.Tokenizer.ListOfString.Operator (
+  tokenizeOperator
   )
 
 --
@@ -54,13 +54,15 @@ charToInt _ = 0
 tokenizeUIntSegChainOnError :: TokenizerIn -> Char -> (TokenizerOut, Int) ->
   (TokenizerOut, Int)
 tokenizeUIntSegChainOnError input c (((TokenizedInt _ _), input2, _), _)
+  | (headOfShiftedTokenizerIn input) `elem` listOperators =
+    (createTokenizerOutOKForce
+      (TokenizedInt (charToInt c) (signTokenized input)) input2, 10)
   | (headOfShiftedTokenizerIn input) `elem` listSymbols =
     (createTokenizerOutError (shiftedTokenizerIn input)
       ("Unreconized Symbol '" ++ [headOfShiftedTokenizerIn input] ++ "'")
       "(tokenizeInt) Is part of listSymbols", 0)
-  | otherwise                                           =
-    (createTokenizerOutOKForce
-      (TokenizedInt (charToInt c) (signTokenized input)) input2, 10)
+  | otherwise = (createTokenizerOutOKForce
+    (TokenizedInt (charToInt c) (signTokenized input)) input2, 10)
 tokenizeUIntSegChainOnError input c ((_, input2, _), _) =
     (createTokenizerOutOKForce
       (TokenizedInt (charToInt c) (signTokenized input)) input2, 10)
@@ -115,8 +117,11 @@ tokenizeIntSeg input c
 tokenizeInt :: Tokenizer
 tokenizeInt = Tokenizer $ \input ->
   case tokenizeIntSeg input (headTokenizerIn input) of
-    (x, input2, status)
-      | (isParserStatusError status) &&
-        (headTokenizerIn input) `elem` listSymbolsStart ->
-          input `tokenize` tokenizeString
-      | otherwise ->  (x, input2, status)
+    (x1, input1, status1)
+      | (isParserStatusError status1) &&
+        (headTokenizerIn input) `elem` listOperators  ->
+          input `tokenize` tokenizeOperator
+      | (headTokenizerIn input1) `elem` listOperators ->
+        case input1 `tokenize` tokenizeOperator of
+          (x2, input2, status2) -> (TokenizedLine [x1, x2], input2, status2)
+      | otherwise                                     -> (x1, input1, status1)

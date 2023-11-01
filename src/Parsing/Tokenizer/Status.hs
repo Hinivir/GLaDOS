@@ -22,6 +22,8 @@ module Parsing.Tokenizer.Status (
   listNumSigns,
   listNumDigits,
   listNumStart,
+  listOperators,
+  listOperatorsComb,
   listSymbolsStart,
   listSymbols,
   listUnique,
@@ -98,7 +100,7 @@ createTokenizerOutError input name info = case input of
 
 --
 errorContent :: (TokenizerOut) -> TokenizedAny -> TokenizerOut
-errorContent (_, input, status) content = (content ,input, status)
+errorContent (_, input, status) content = (content, input, status)
 
 -- FUNCTIONS --
 
@@ -119,12 +121,23 @@ listNumStart :: [Char]
 listNumStart = listNumDigits ++ listNumSigns
 
 --
+listOperatorsComb :: [String]
+listOperatorsComb = [
+  "+", "-", "*", "/", "%",
+  "<", ">", "==", "!=", "<=", ">=", "!="
+  ]
+
+--
+listOperators :: [Char]
+listOperators = "+-*/%<>=!"
+
+--
 listSymbolsStart :: [Char]
-listSymbolsStart = ['a'..'z'] ++ ['A'..'Z'] ++ "+-*/%<>=?!#."
+listSymbolsStart = ['a'..'z'] ++ ['A'..'Z'] ++ "?#."
 
 --
 listSymbols :: [Char]
-listSymbols = listSymbolsStart ++ ['0'..'9']
+listSymbols = listSymbolsStart ++ ['0'..'9'] ++ listOperators
 
 --
 listUniquePairEnd :: [Char]

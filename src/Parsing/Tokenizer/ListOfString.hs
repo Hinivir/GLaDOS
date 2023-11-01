@@ -31,6 +31,7 @@ import Parsing.Tokenizer.Status (
   listEmpty,
   listLiteral,
   listNumStart,
+  listOperators,
   listSymbolsStart,
   listUnique,
   shiftedTokenizerIn,
@@ -40,6 +41,10 @@ import Parsing.Tokenizer.Status (
 
 import Parsing.Tokenizer.ListOfString.Int (
   tokenizeInt
+  )
+
+import Parsing.Tokenizer.ListOfString.Operator (
+  tokenizeOperator
   )
 
 import Parsing.Tokenizer.ListOfString.String (
@@ -52,10 +57,10 @@ import Parsing.Tokenizer.ListOfString.String (
 tokenizeLiteralSegChain ::
   TokenizerIn -> Char -> TokenizerIn -> Char -> TokenizerOut -> TokenizerOut
 tokenizeLiteralSegChain _ _ input c (TokenizedLiteral x _, input2, status)
-  | isParserStatusError status =
-    createTokenizerOutOKForce (TokenizedLiteral (c : x) (signTokenized input)) input2
-  | otherwise =
-    createTokenizerOutOKForce (TokenizedLiteral (c : x) (signTokenized input)) input2
+  | isParserStatusError status = createTokenizerOutOKForce
+    (TokenizedLiteral (c : x) (signTokenized input)) input2
+  | otherwise = createTokenizerOutOKForce
+    (TokenizedLiteral (c : x) (signTokenized input)) input2
 tokenizeLiteralSegChain _ _ input _ (x, input2, status)
   | isParserStatusError status = (x, input2, status)
   | otherwise =
@@ -111,6 +116,7 @@ tokenizeAnySeg input c
   | c `elem` listUnique         = input `tokenize` tokenizeUnique
   | c `elem` listLiteral        = input `tokenize` tokenizeLiteral
   | c `elem` listNumStart       = input `tokenize` tokenizeInt
+  | c `elem` listOperators      = input `tokenize` tokenizeOperator
   | c `elem` listSymbolsStart   = input `tokenize` tokenizeString
   | c `elem` listEmpty          =
     (shiftedTokenizerIn input) `tokenize` tokenizeAny
@@ -122,6 +128,12 @@ tokenizeAny = Tokenizer $ \input ->
   tokenizeAnySeg input (headTokenizerIn input)
 
 tokenizeListOfStringSub :: TokenizerOut -> (Maybe [TokenizedAny], ParserStatus)
+tokenizeListOfStringSub (TokenizedLine line, output, status1)
+  | isParserStatusError status1 = (Nothing, status1)
+  | hasTokenizerInEnded output  = (Just line, status1)
+  | otherwise                   = case tokenizeListOfStringIn output of
+    (Nothing, status2)    -> (Nothing, status2)
+    (Just list, status2)  -> (Just (line ++ list), status2)
 tokenizeListOfStringSub (TokenizedUndefined, output, outerStatus)
   | isParserStatusError outerStatus  = (Nothing, outerStatus)
   | hasTokenizerInEnded output  = (Just [], outerStatus)
