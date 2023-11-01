@@ -1,0 +1,5 @@
+Lipdo main:
+    if (1 == 2)
+        True
+    else
+        False
