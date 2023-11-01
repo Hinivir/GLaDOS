@@ -32,7 +32,7 @@ import Parsing.Tokenizer.Status (
   )
 
 import Parsing.Tokenizer (
-  TokenizedAny(TokenizedInt, TokenizedLine)
+  TokenizedAny(TokenizedInt, TokenizedFloat, TokenizedLine)
   )
 
 import Parsing.Tokenizer.ListOfString.Dec (
@@ -56,12 +56,16 @@ charToInt '8' = 8
 charToInt '9' = 9
 charToInt _ = 0
 
+-- | Used by tokenizeUIntSegChainOnError
+listOpeartorsDecimal :: [Char]
+listOpeartorsDecimal = listOperators ++ listNumDecimal
+
 --
 tokenizeUIntSegChainOnError :: TokenizerIn -> Char -> (TokenizerOut, Int) ->
   (TokenizerOut, Int)
 tokenizeUIntSegChainOnError input c (((TokenizedInt _ _), input2, _), _)
   | (headOfShiftedTokenizerIn input) `elem` listSymbols &&
-    not ((headOfShiftedTokenizerIn input) `elem` listOperators) =
+    not ((headOfShiftedTokenizerIn input) `elem` listOpeartorsDecimal) =
       (createTokenizerOutError (shiftedTokenizerIn input)
         ("Unreconized Symbol '" ++ [headOfShiftedTokenizerIn input] ++ "'")
         "(tokenizeInt) Is part of listSymbols", 0)
@@ -100,34 +104,84 @@ tokenizeUIntSeg input c
       `errorContent` (TokenizedInt 0 (signTokenized input)), 0)
 
 --
+tokenizeUIntSegStart :: TokenizerIn -> Char -> (TokenizerOut, Int)
+tokenizeUIntSegStart input c
+  | c `elem` listNumDecimal = (createTokenizerOutOKForce
+    (TokenizedInt 0 (signTokenized input)) input, 0)
+  | otherwise               =
+    tokenizeUIntSeg input c
+
+--
 tokenizeIntSeg :: TokenizerIn -> Char -> TokenizerOut
-tokenizeIntSeg input '+' = case tokenizeUIntSeg (shiftedTokenizerIn input)
+tokenizeIntSeg input '+' = case tokenizeUIntSegStart (shiftedTokenizerIn input)
   (headOfShiftedTokenizerIn input) of
   ((TokenizedInt x _, input2, status), _) ->
     (TokenizedInt x (signTokenized input), input2, status)
   (output, _) -> output
-tokenizeIntSeg input '-' = case tokenizeUIntSeg (shiftedTokenizerIn input)
+tokenizeIntSeg input '-' = case tokenizeUIntSegStart (shiftedTokenizerIn input)
   (headOfShiftedTokenizerIn input) of
   ((TokenizedInt x _, input2, status), _) ->
     (TokenizedInt (0 - x) (signTokenized input), input2, status)
   (output, _) -> output
 tokenizeIntSeg input c
-  | c `elem` listNumDecimal = (shiftedTokenizerIn input) `tokenize` tokenizeDec
-  | c `elem` listNumDigits  = case tokenizeUIntSeg input c of
+  | c `elem` listNumDecimal = createTokenizerOutOKForce
+    (TokenizedInt 0 (signTokenized input)) input
+  | c `elem` listNumDigits  = case tokenizeUIntSegStart input c of
     (output, _) -> output
   | otherwise               =
     createTokenizerOutError input ("Unreconized Symbol '" ++ [c] ++ "'")
-      "(tokenizeInt) Is not '+', '-', '.' or part of listNumDigits"
+      "(tokenizeInt) Is not '+', '-', part of listNumDigits nor listNumDecimal"
+
+--
+tokenizeIntEndOperator :: TokenizerOut -> TokenizerOut
+tokenizeIntEndOperator (x1, input1, status1) =
+  case input1 `tokenize` tokenizeOperator of
+    (x2, input2, status2) -> (TokenizedLine [x1, x2], input2, status2)
+
+--
+tokenizeIntEndDecSeg :: TokenizerIn -> TokenizerOut -> TokenizerOut
+tokenizeIntEndDecSeg input (TokenizedInt 0 co1, input1, status1) =
+  case (shiftedTokenizerIn input1) `tokenize` tokenizeDec of
+    (TokenizedFloat x2 co2, input2, status2)
+      | (headTokenizerIn input) == '-'  -> (TokenizedFloat
+        (0 - x2) co1, input2, status2)
+      | otherwise                       -> (TokenizedFloat
+        x2 co1, input2, status2)
+    (x2, input2, status2)                     -> (x2, input2, status2)
+tokenizeIntEndDecSeg input (TokenizedInt x1 co1, input1, status1) =
+  case (shiftedTokenizerIn input1) `tokenize` tokenizeDec of
+    (TokenizedFloat x2 co2, input2, status2)
+      | (headTokenizerIn input) == '-'  -> (TokenizedFloat
+        ((fromIntegral x1 :: Float) + (0 - x2)) co1, input2, status2)
+      | otherwise                       -> (TokenizedFloat
+        ((fromIntegral x1 :: Float) + x2) co1, input2, status2)
+    (x2, input2, status2)                     -> (x2, input2, status2)
+tokenizeIntEndDecSeg _ (x1, input1, status1) = (x1, input1, status1)
+
+-- | Handles cases where the number is a float
+tokenizeIntEndDec :: TokenizerIn -> TokenizerOut -> TokenizerOut
+tokenizeIntEndDec input output = case tokenizeIntEndDecSeg input output of
+  (x1, input1, status1)
+    | (tokenizeIntIfErrorToOperator (x1, input, status1)) ->
+      input `tokenize` tokenizeOperator
+    | (headTokenizerIn input1) `elem` listOperators       ->
+      tokenizeIntEndOperator (x1, input1, status1)
+    | otherwise -> (x1, input1, status1)
+
+tokenizeIntIfErrorToOperator :: TokenizerOut -> Bool
+tokenizeIntIfErrorToOperator (_, input1, status1) =
+  (isParserStatusError status1) &&
+    (headTokenizerIn input1) `elem` listOperators
 
 -- | Handles ints and floats, like 7, -42, -1.6180 or .31415
 tokenizeInt :: Tokenizer
 tokenizeInt = Tokenizer $ \input ->
   case tokenizeIntSeg input (headTokenizerIn input) of
     (x1, input1, status1)
-      | (isParserStatusError status1) &&
-        (headTokenizerIn input) `elem` listOperators  ->
-          input `tokenize` tokenizeOperator
-      | (headTokenizerIn input1) `elem` listOperators ->
-        case input1 `tokenize` tokenizeOperator of
-          (x2, input2, status2) -> (TokenizedLine [x1, x2], input2, status2)
-      | otherwise                                     -> (x1, input1, status1)
+      | (tokenizeIntIfErrorToOperator (x1, input, status1)) ->
+        input `tokenize` tokenizeOperator
+      | (headTokenizerIn input1) `elem` listOperators       ->
+        tokenizeIntEndOperator (x1, input1, status1)
+      | (headTokenizerIn input1) `elem` listNumDecimal      ->
+        tokenizeIntEndDec input (x1, input1, status1)
+      | otherwise -> (x1, input1, status1)

@@ -34,10 +34,6 @@ import Parsing.Tokenizer (
   TokenizedAny(TokenizedFloat, TokenizedLine)
   )
 
-import Parsing.Tokenizer.ListOfString.Operator (
-  tokenizeOperator
-  )
-
 --
 charToDec :: Char -> Float
 charToDec '1' = 0.1
@@ -104,12 +100,4 @@ tokenizeDecSeg input c
 -- | Handles decimal parts
 tokenizeDec :: Tokenizer
 tokenizeDec = Tokenizer $ \input ->
-  case tokenizeDecSeg input (headTokenizerIn input) of
-    (x1, input1, status1)
-      | (isParserStatusError status1) &&
-        (headTokenizerIn input) `elem` listOperators  ->
-          input `tokenize` tokenizeOperator
-      | (headTokenizerIn input1) `elem` listOperators ->
-        case input1 `tokenize` tokenizeOperator of
-          (x2, input2, status2) -> (TokenizedLine [x1, x2], input2, status2)
-      | otherwise                                     -> (x1, input1, status1)
+  tokenizeDecSeg input (headTokenizerIn input)
