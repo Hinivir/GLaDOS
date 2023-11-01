@@ -29,6 +29,7 @@ import Data.Either()
 --head tail :(cons) + autres builtin
 
 data Value = Number Int
+            | Float Float
             | Boolean Bool
             | Op Operation
             | Builtin Builtin

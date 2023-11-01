@@ -26,9 +26,12 @@ import ParserStatus (
   createParserStatusOk,
   )
 
-import Parsing.Instruct (
-  Instruct(..)
-  )
+import Vm (Args)
+
+data Instruct = InstructUndefined
+  | InstructLipBe String [Instruct]
+  | InstructLipDo String [Args] [Instruct]
+  deriving (Eq, Show)
 
 -- TOKENIZER
 

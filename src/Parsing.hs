@@ -22,10 +22,15 @@ import Parsing.LDataTree (
   LData
   )
 
-import Parsing.Instruct (
+import Vm (
   Instructions,
   Env
   )
+
+--import Parsing.Instruct (
+--  Instructions,
+--  Env
+--  )
 
 import Parsing.Instruct.LDataToInstruct (
   convertLDataToInstruct

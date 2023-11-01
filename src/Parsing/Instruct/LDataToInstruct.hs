@@ -17,7 +17,8 @@ import ParserStatus
     ParserStatus
   )
 
-import Parsing.Instruct
+
+import Vm
   (
     Value(..),
     Operation(..),
@@ -25,6 +26,14 @@ import Parsing.Instruct
     Instructions,
     Env
   )
+--import Parsing.Instruct
+--  (
+--    Value(..),
+--    Operation(..),
+--    Instruction(..),
+--    Instructions,
+--    Env
+--  )
 
 import Parsing.LDataTree
   (
@@ -39,8 +48,8 @@ handleVar x (LDataGroup [LDataFloat y _] _ : z) env inst =
   convertLDataToInstruct z ((x, Float y) : env) inst
 handleVar x (LDataGroup [LDataBool y _] _ : z) env inst =
   convertLDataToInstruct z ((x, Boolean y) : env) inst
-handleVar x (LDataGroup [LDataString y _] _ : z) env inst =
-  convertLDataToInstruct z ((x, String y) : env) inst
+--handleVar x (LDataGroup [LDataString y _] _ : z) env inst =
+--  convertLDataToInstruct z ((x, [String] y) : env) inst
 handleVar _ x _ _ = (Nothing, [], createParserStatusError "Error"
   ("handleVar " ++ (show x)) 0 0)
 
@@ -124,8 +133,8 @@ convertLDataToInstruct (LDataTuple x (_, _) : _) env inst =
 convertLDataToInstruct (LDataSymbol x (l, c): _) _  _ =
   (Nothing, [], createParserStatusError "Error"
   ("Symbol Not Know " ++ x) l c)
-convertLDataToInstruct (LDataString x (_, _) : _) _ _ =
-  (Just [Push (String x)], [], createParserStatusOk)
+--convertLDataToInstruct (LDataString x (_, _) : _) _ _ =
+--  (Just [Push (String x)], [], createParserStatusOk)
 convertLDataToInstruct [] env inst =
   (Just (inst ++ [Ret]), env, createParserStatusOk)
 convertLDataToInstruct (LDataUndefined : _) _ _ =
