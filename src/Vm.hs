@@ -48,7 +48,9 @@ data Operation = Add
                 | Mod
                 | Eq
                 | Less
+                | LessEq
                 | Greater
+                | GreaterEq
                 deriving (Show, Eq)
 
 data Instruction = Push Value
@@ -78,17 +80,19 @@ resOp (Right (Op x)) = x
 resOp _ = Add
 
 callOp :: Operation -> Value -> Value -> Either String Value
-callOp Add (Number x) (Number y) = Right (Number(x + y))
-callOp Sub (Number x) (Number y) = Right (Number(x - y))
-callOp Mul (Number x) (Number y) = Right (Number(x * y))
+callOp Add (Number x) (Number y) = Right (Number(y + x))
+callOp Sub (Number x) (Number y) = Right (Number(y - x))
+callOp Mul (Number x) (Number y) = Right (Number(y * x))
 callOp Div _ (Number 0) = Left "Error: division by zero"
-callOp Div (Number x) (Number y) = Right (Number(x `div` y))
+callOp Div (Number x) (Number y) = Right (Number(y `div` x))
 callOp Mod _ (Number 0) = Left "Error: modulo by zero"
-callOp Mod (Number x) (Number y) = Right (Number(x `mod` y))
-callOp Eq (Number x) (Number y) = Right (Boolean(x == y))
-callOp Eq (Boolean x) (Boolean y) = Right (Boolean(x == y))
-callOp Less (Number x) (Number y) = Right (Boolean(x < y))
-callOp Greater (Number x) (Number y) = Right (Boolean(x > y))
+callOp Mod (Number x) (Number y) = Right (Number(y `mod` x))
+callOp Eq (Number x) (Number y) = Right (Boolean(y == x))
+callOp Eq (Boolean x) (Boolean y) = Right (Boolean(y == x))
+callOp Less (Number x) (Number y) = Right (Boolean(y < x))
+callOp LessEq (Number x) (Number y) = Right (Boolean(y <= x))
+callOp Greater (Number x) (Number y) = Right (Boolean(y > x))
+callOp GreaterEq (Number x) (Number y) = Right (Boolean(y >= x))
 callOp _ _ _ = Left "Error: invalid operation"
 
 callBuiltin :: Builtin -> Value -> Either String Value
