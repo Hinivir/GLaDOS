@@ -24,6 +24,7 @@ import Parsing.Tokenizer.Status (
   headOfShiftedTokenizerIn,
   listSymbols,
   listOperators,
+  listNumDecimal,
   listNumDigits,
   shiftedTokenizerIn,
   signTokenized,
@@ -32,6 +33,10 @@ import Parsing.Tokenizer.Status (
 
 import Parsing.Tokenizer (
   TokenizedAny(TokenizedInt, TokenizedLine)
+  )
+
+import Parsing.Tokenizer.ListOfString.Dec (
+  tokenizeDec
   )
 
 import Parsing.Tokenizer.ListOfString.Operator (
@@ -51,16 +56,15 @@ charToInt '8' = 8
 charToInt '9' = 9
 charToInt _ = 0
 
+--
 tokenizeUIntSegChainOnError :: TokenizerIn -> Char -> (TokenizerOut, Int) ->
   (TokenizerOut, Int)
 tokenizeUIntSegChainOnError input c (((TokenizedInt _ _), input2, _), _)
-  | (headOfShiftedTokenizerIn input) `elem` listOperators =
-    (createTokenizerOutOKForce
-      (TokenizedInt (charToInt c) (signTokenized input)) input2, 10)
-  | (headOfShiftedTokenizerIn input) `elem` listSymbols =
-    (createTokenizerOutError (shiftedTokenizerIn input)
-      ("Unreconized Symbol '" ++ [headOfShiftedTokenizerIn input] ++ "'")
-      "(tokenizeInt) Is part of listSymbols", 0)
+  | (headOfShiftedTokenizerIn input) `elem` listSymbols &&
+    not ((headOfShiftedTokenizerIn input) `elem` listOperators) =
+      (createTokenizerOutError (shiftedTokenizerIn input)
+        ("Unreconized Symbol '" ++ [headOfShiftedTokenizerIn input] ++ "'")
+        "(tokenizeInt) Is part of listSymbols", 0)
   | otherwise = (createTokenizerOutOKForce
     (TokenizedInt (charToInt c) (signTokenized input)) input2, 10)
 tokenizeUIntSegChainOnError input c ((_, input2, _), _) =
@@ -82,7 +86,7 @@ tokenizeUIntSegChain input _ ((x, input2, status), tilt)
   | isParserStatusError status  = ((x, input2, status), tilt)
   | otherwise                   =
     (createTokenizerOutError input "Invalid output"
-      "(tokenizeInt) tokenizeInt didn't return TokenizedString", 0)
+      "(tokenizeInt) tokenizeInt didn't return TokenizedInt", 0)
 
 --
 tokenizeUIntSeg :: TokenizerIn -> Char -> (TokenizerOut, Int)
@@ -95,6 +99,7 @@ tokenizeUIntSeg input c
       "(tokenizeInt) Is not part of listNumDigits")
       `errorContent` (TokenizedInt 0 (signTokenized input)), 0)
 
+--
 tokenizeIntSeg :: TokenizerIn -> Char -> TokenizerOut
 tokenizeIntSeg input '+' = case tokenizeUIntSeg (shiftedTokenizerIn input)
   (headOfShiftedTokenizerIn input) of
@@ -107,13 +112,14 @@ tokenizeIntSeg input '-' = case tokenizeUIntSeg (shiftedTokenizerIn input)
     (TokenizedInt (0 - x) (signTokenized input), input2, status)
   (output, _) -> output
 tokenizeIntSeg input c
+  | c `elem` listNumDecimal = (shiftedTokenizerIn input) `tokenize` tokenizeDec
   | c `elem` listNumDigits  = case tokenizeUIntSeg input c of
     (output, _) -> output
   | otherwise               =
     createTokenizerOutError input ("Unreconized Symbol '" ++ [c] ++ "'")
-      "(tokenizeInt) Is not '+', '-' or part of listNumDigits"
+      "(tokenizeInt) Is not '+', '-', '.' or part of listNumDigits"
 
--- | Handles regular strings, like symbols or simple keywords
+-- | Handles ints and floats, like 7, -42, -1.6180 or .31415
 tokenizeInt :: Tokenizer
 tokenizeInt = Tokenizer $ \input ->
   case tokenizeIntSeg input (headTokenizerIn input) of

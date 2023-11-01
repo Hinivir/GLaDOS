@@ -19,8 +19,9 @@ module Parsing.Tokenizer.Status (
   isUniquePair,
   listEmpty,
   listLiteral,
-  listNumSigns,
+  listNumDecimal,
   listNumDigits,
+  listNumSigns,
   listNumStart,
   listOperators,
   listOperatorsComb,
@@ -109,6 +110,10 @@ tokenize :: TokenizerIn -> Tokenizer -> (TokenizerOut)
 tokenize a f = runTokenizer f a
 
 --
+listNumDecimal :: [Char]
+listNumDecimal = "."
+
+--
 listNumSigns :: [Char]
 listNumSigns = "+-"
 
@@ -118,7 +123,7 @@ listNumDigits = ['0'..'9']
 
 --
 listNumStart :: [Char]
-listNumStart = listNumDigits ++ listNumSigns
+listNumStart = listNumDigits ++ listNumSigns ++ listNumDecimal
 
 --
 listOperatorsComb :: [String]
