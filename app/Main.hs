@@ -40,9 +40,7 @@ printResult (Nothing, _, ParserStatusOK) = errorExit "No input"
 printResult (Nothing, _, ParserStatusError _ errorMsg line col) =
   errorExit $ "Error at line " ++ show line ++ ", column "
   ++ show col ++ ": " ++ show errorMsg
-printResult (Just instruct, env,_) = do
-  print instruct
-  print env
+printResult (Just instruct, env, _) = print instruct >> print env
 
 -- | The main function
 -- | Read the lines, parse them and print the result
