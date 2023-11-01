@@ -16,6 +16,7 @@ The repository for the GLaDOS project.
 [1. The purpose of the project](#titre1)<br />
 [A) The subjects of the project 📄](#titre11)<br />
 [B) Rules for conventional commit messages 📄](#titre12)<br />
+[C) Backus-Naur Form of Lispatant 📄](#titre13)<br />
 
 [2. How to use GLaDOS](#titre2)<br />
 
@@ -39,9 +40,14 @@ We have to implement a compiler for this language, and a virtual machine to run 
 
 4 [GLaDOS - Generic Language and Data Operand Syntax](https://intra.epitech.eu/module/2023/B-FUN-500/PAR-5-1/acti-610933/project/file/B-FUN-500_GLaDOS.pdf)  
 
-### <a id="titre11"></a>B) Rules for conventional commit messages 📄
+### <a id="titre12"></a>B) Rules for conventional commit messages 📄
 
 [The document rules for conventional commit messages](docs/COMMITS.md)
+
+
+### <a id="titre13"></a>C) Backus-Naur Form of Lispatant 📄
+
+[The document for Backus-Naur Form of Lispatant](docs/BNF_Lispatant.md)
 
 ---  
   

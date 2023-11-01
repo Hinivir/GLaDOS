@@ -2,7 +2,7 @@
 
 Please find here the **Backus-Naur Form** (BNF) of our **Lispatant** language.
 This document explains the grammar of our language.
-As an example, you can find the BNF of C [here](BNF_C.md)
+As an example, you can find the BNF of C [here](https://cs.wmich.edu/~gupta/teaching/cs4850/sumII06/The%20syntax%20of%20C%20in%20Backus-Naur%20form.htm)
 
 ```BNF
 <argument-list> ::= <literal> (<literal>)*
