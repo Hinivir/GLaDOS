@@ -29,7 +29,7 @@ module Parsing.Tokenizer.Status (
   listUniquePair,
   listUniquePairEnd,
   listUniquePairStart,
-  listUniqueSnitch,
+  listUniqueHook,
   shiftedTokenizerIn,
   signTokenized,
   tokenize
@@ -142,13 +142,13 @@ listUniquePair = listUniquePairStart ++ listUniquePairEnd
 listUniqueEnd :: [Char]
 listUniqueEnd = "\n|;"
 
--- | Snitches are used to ignore linebreaks (listUniqueEnd)
-listUniqueSnitch :: [Char]
-listUniqueSnitch = "\\"
+-- | Hookes are used to ignore linebreaks (listUniqueEnd)
+listUniqueHook :: [Char]
+listUniqueHook = "\\"
 
 --
 listUnique :: [Char]
-listUnique = listUniquePair ++ listUniqueEnd ++ listUniqueSnitch ++ ",:"
+listUnique = listUniquePair ++ listUniqueEnd ++ listUniqueHook ++ ",:"
 
 --
 listEmpty :: [Char]
