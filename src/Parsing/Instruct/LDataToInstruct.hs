@@ -15,7 +15,9 @@ module Parsing.Instruct.LDataToInstruct
     handleIntOpGroup,
     handleOpFloat,
     handleGroupOpFloat,
-    handleFloatOpGroup
+    handleFloatOpGroup,
+    getOp,
+    getOp2
   ) where
 
 import ParserStatus
@@ -49,7 +51,7 @@ handleVar x (LDataGroup [LDataBool y _] _ : z) env inst =
   convertLDataToInstruct z ((x, Boolean y) : env) inst
 handleVar x (LDataGroup [LDataString y _] _ : z) env inst =
   convertLDataToInstruct z ((x, String y) : env) inst
-handleVar _ x _ _ = (Nothing, [], createParserStatusError "Error"
+handleVar x _ _ _ = (Nothing, [], createParserStatusError "Error"
   ("handleVar " ++ show x) 0 0)
 
 getOp :: String -> Operation

@@ -25,6 +25,12 @@ import TestVm (
   testExec
   )
 
+import TestInstruction (
+    testHandleVar,
+    testGetOp,
+    testGetOp2
+    )
+
 main :: IO ()
 main = do
     -- testParserStatus
@@ -48,4 +54,9 @@ main = do
     _ <- runTestTT testCallOp
     putStrLn "Run test for the Vm exec "
     _ <- runTestTT testExec
+    putStrLn "Run test for the Instruction handleVar"
+    _ <- runTestTT testHandleVar
+    putStrLn "Run test for the Instruction getOp"
+    _ <- runTestTT testGetOp
+    _ <- runTestTT testGetOp2
     return ()
