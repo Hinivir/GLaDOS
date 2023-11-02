@@ -22,9 +22,10 @@ import Parsing.LDataTree (
   LData
   )
 
-import Parsing.Instruct (
+import Vm (
   Instructions,
-  Env
+  Env,
+  Instruction(..)
   )
 
 import Parsing.Instruct.LDataToInstruct (
@@ -83,4 +84,9 @@ parsingToInstruct input = case parsingToLDataTree input of
                                     createParserStatusErrorSimple
         "Invalid output"
         "(parsingToInstruct) parsingToLDataTree returned Nothing")
-      Just x                      -> convertLDataToInstruct x [] []
+      Just x                      -> parsingToInstruct2 x
+
+parsingToInstruct2 :: [LData] -> (Maybe Instructions, Env, ParserStatus)
+parsingToInstruct2 input = case convertLDataToInstruct input [] [] of
+        (Nothing, _, status')      -> (Nothing, [], status')
+        (Just x', env, status')     -> (Just (x' ++ [Ret]), env, status')

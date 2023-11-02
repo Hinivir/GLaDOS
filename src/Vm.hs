@@ -30,6 +30,8 @@ import Data.Either()
 
 data Value = Number Int
             | Boolean Bool
+            | String String
+            | Float Float
             | Op Operation
             | Builtin Builtin
             | List [Value]
@@ -140,4 +142,4 @@ exec args env (JumpIfFalse n:xs) (Boolean False:ys) =
     exec args env (drop n xs) ys
 exec args env (JumpIfFalse _:xs) (_:stack) = exec args env xs stack
 exec args env (Jump n:xs) stack = exec args env (drop n xs) stack
-exec _ _ _ _ = Left "Invalid instruction"
+exec _ _ _ x = Left ("Invalid instruction " ++ show x)
