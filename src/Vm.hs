@@ -31,9 +31,11 @@ import Data.Either()
 data Value = Number Int
             | Float Float
             | Boolean Bool
+            | Char Char
             | Op Operation
             | Builtin Builtin
             | List [Value]
+            | String String
             | Func Instructions
             deriving (Show, Eq)
 
@@ -98,10 +100,13 @@ callOp _ _ _ = Left "Error: invalid operation"
 
 callBuiltin :: Builtin -> Value -> Either String Value
 callBuiltin Head (List (x:_)) = Right x
+callBuiltin Head (String (x:_)) = Right (Char x)
 callBuiltin Head _ = Left "Error: head of empty list"
 callBuiltin Tail (List (_:xs)) = Right (List xs)
+callBuiltin Tail (String (_:xs)) = Right (String xs)
 callBuiltin Tail _ = Left "Error: tail of empty list"
 callBuiltin Len (List xs) = Right (Number (length xs))
+callBuiltin Len (String xs) = Right (Number (length xs))
 callBuiltin _ _ = Left "Error: invalid builtin"
 
 execFunc :: Args -> Env -> Value -> Stack -> Either String Value
