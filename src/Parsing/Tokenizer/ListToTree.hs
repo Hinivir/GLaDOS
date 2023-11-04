@@ -18,6 +18,7 @@ import Parsing.Tokenizer.Status (
   listUniquePairStart,
   listUniquePairEnd,
   listUniqueEnd,
+  listUniqueHook,
   isUniquePair
   )
 
@@ -70,18 +71,44 @@ tokenizeListToTreeInSegPair _ _ =
   (Nothing, [], createParserStatusErrorSimple
     "Unhandled case" "(tokenizeListToTreeInSegPair)")
 
+-- | Manage hookes like '\\' that needs to be followed by a linebreak
+tokenizeListToTreeInSegHook :: TokenListIn
+tokenizeListToTreeInSegHook
+  ((TokenizedChar c1 (ln, col)):((TokenizedChar c2 _):t)) sep
+  | not (c1 `elem` listUniqueHook)  = (Nothing, [], createParserStatusError
+    ("Unexpected character '" ++ [c1] ++ "'")
+    "(tokenizeListToTreeInSegHook)" ln col)
+  | not (c2 `elem` listUniqueEnd)   = (Nothing, [], createParserStatusError
+    ("'" ++ [c1] ++ " should be followed by a listUniqueEnd")
+    "(tokenizeListToTreeInSegHook)" ln col)
+  | otherwise                       = tokenizeListToTreeIn t sep
+tokenizeListToTreeInSegHook ((TokenizedChar c1 (ln, col)):_) _
+  | not (c1 `elem` listUniqueHook)  = (Nothing, [], createParserStatusError
+    ("Unexpected character '" ++ [c1] ++ "'")
+    "(tokenizeListToTreeInSegHook)" ln col)
+  | otherwise                       = (Nothing, [], createParserStatusError
+    ("'" ++ [c1] ++ " should be followed by a listUniqueEnd")
+    "(tokenizeListToTreeInSegHook)" ln col)
+tokenizeListToTreeInSegHook (t:_) _ = case getTokenizerCoordinates t of
+  (ln, col) -> (Nothing, [], createParserStatusError "Unexpected TokenizedAny"
+    "(tokenizeListToTreeInSegHook)" ln col)
+tokenizeListToTreeInSegHook _ _ =
+  (Nothing, [], createParserStatusErrorSimple "Unexpected empty [TokenizedAny]"
+    "(tokenizeListToTreeInSegHook)")
+
 --
 tokenizeListToTreeInSeg :: TokenListIn
 tokenizeListToTreeInSeg [] _ =
   (Just [], [], createParserStatusOk)
 tokenizeListToTreeInSeg ((TokenizedChar c (ln, col)):t) sep =
-  case TokenizedChar c (ln, col) of
-    h
-      | c `elem` listUniquePairStart  -> tokenizeListToTreeInSegPair (h:t) sep
-      | c `elem` listUniquePairEnd    -> (Nothing, [],
-        createParserStatusError ("Unopened closing '" ++ [c] ++ "'") "" ln col)
+  case (TokenizedChar c (ln, col):t) of
+    ht
+      | c `elem` listUniqueHook     -> tokenizeListToTreeInSegHook ht sep
+      | c `elem` listUniquePairStart  -> tokenizeListToTreeInSegPair ht sep
+      | c `elem` listUniquePairEnd    -> (Nothing, [], createParserStatusError
+        ("Unopened closing '" ++ [c] ++ "'") "(tokenizeListToTreeInSeg)" ln col)
       | otherwise                     ->
-        tokenizeListToTreeInRec (tokenizeListToTreeIn t sep) (h:t) sep
+        tokenizeListToTreeInRec (tokenizeListToTreeIn t sep) ht sep
 tokenizeListToTreeInSeg (h:t) sep =
   tokenizeListToTreeInRec (tokenizeListToTreeIn t sep) (h:t) sep
 
