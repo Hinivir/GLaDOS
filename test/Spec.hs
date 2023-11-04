@@ -7,9 +7,29 @@
 
 import Test.HUnit
 
-import TestParserStatus
+import TestParserStatus (
+  testIsParserStatusOk,
+  testIsParserStatusError,
+  testInterpretParserStatus
+  )
 
-import TestTokenizer
+import TestTokenizer (
+  testTokenizerCoordonate,
+  testExpressTokenizedFunc,
+  testExpressTokenizedTree,
+  testGetLDataCoordinates
+  )
+
+import TestVm (
+  testCallOp,
+  testExec
+  )
+
+import TestInstruction (
+    testHandleVar,
+    testGetOp,
+    testGetOp2
+    )
 
 main :: IO ()
 main = do
@@ -29,4 +49,14 @@ main = do
     _ <- runTestTT testExpressTokenizedTree
     putStrLn "Run test for getLDataCoordinates"
     _ <- runTestTT testGetLDataCoordinates
+    -- testVm
+    putStrLn "Run test for the Vm callOp"
+    _ <- runTestTT testCallOp
+    putStrLn "Run test for the Vm exec "
+    _ <- runTestTT testExec
+    putStrLn "Run test for the Instruction handleVar"
+    _ <- runTestTT testHandleVar
+    putStrLn "Run test for the Instruction getOp"
+    _ <- runTestTT testGetOp
+    _ <- runTestTT testGetOp2
     return ()

@@ -14,7 +14,7 @@ import System.IO
 
 import Parsing (parsingToInstruct)
 import ParserStatus (ParserStatus(..))
-import Parsing.Instruct (Instructions, Env)
+import Vm (Instructions, Env)
 
 -- | Function that take a String and print it
 -- | Print the String and exit with an error
@@ -40,9 +40,7 @@ printResult (Nothing, _, ParserStatusOK) = errorExit "No input"
 printResult (Nothing, _, ParserStatusError _ errorMsg line col) =
   errorExit $ "Error at line " ++ show line ++ ", column "
   ++ show col ++ ": " ++ show errorMsg
-printResult (Just instruct, env,_) = do
-  print instruct
-  print env
+printResult (Just instruct, env, _) = print instruct >> print env
 
 -- | The main function
 -- | Read the lines, parse them and print the result
