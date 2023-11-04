@@ -42,6 +42,15 @@ printResult (Nothing, _, ParserStatusError _ errorMsg line col) =
   ++ show col ++ ": " ++ show errorMsg
 printResult (Just instruct, env, _) = print instruct >> print env
 
+createFile :: (Maybe Instructions, Env, ParserStatus) -> IO ()
+createFile (Nothing, _, ParserStatusOK) = errorExit "No input"
+createFile (Nothing, _, ParserStatusError _ errorMsg line col) =
+  errorExit $ "Error at line " ++ show line ++ ", column "
+  ++ show col ++ ": " ++ show errorMsg
+createFile (Just instruct, env, _) =
+  withFile "lip.lop" WriteMode $ \handle ->
+    hPrint handle instruct >> hPrint handle env
+
 -- | The main function
 -- | Read the lines, parse them and print the result
 main :: IO ()
@@ -51,4 +60,4 @@ main = do
     then errorExit "No input"
     else do
       linesTable <- readLines
-      printResult (parsingToInstruct linesTable)
+      createFile (parsingToInstruct linesTable)

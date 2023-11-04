@@ -22,7 +22,6 @@ module Vm
         exec
     ) where
 
-import Data.Char()
 import Data.Either()
 
 --list avant, string apres
@@ -36,12 +35,12 @@ data Value = Number Int
             | Builtin Builtin
             | List [Value]
             | Func Instructions
-            deriving (Show, Eq)
+            deriving (Read, Show, Eq)
 
 data Builtin = Head
             | Tail
             | Len
-            deriving (Show, Eq)
+            deriving (Read, Show, Eq)
 
 data Operation = Add
                 | Sub
@@ -53,7 +52,7 @@ data Operation = Add
                 | LessEq
                 | Greater
                 | GreaterEq
-                deriving (Show, Eq)
+                deriving (Read, Show, Eq)
 
 data Instruction = Push Value
                 | PushArg Int
@@ -62,12 +61,13 @@ data Instruction = Push Value
                 | Ret
                 | JumpIfFalse Int
                 | Jump Int
-                deriving (Show, Eq)
+                deriving (Read, Show, Eq)
 
 type Args = [Value]
 type Stack = [Value]
 type Instructions = [Instruction]
 type Env = [(String, Value)]
+
 
 resInt :: Either String Value -> Int
 resInt (Right (Number x)) = x
