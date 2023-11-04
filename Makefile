@@ -10,6 +10,7 @@ NAME = glados
 STACK = stack
 
 all: $(NAME)
+	$(MAKE) -C Vm -f Makefile
 
 $(NAME):
 	$(STACK) install
