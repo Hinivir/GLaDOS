@@ -4,7 +4,7 @@ TEST_NBR=0
 TEST_SUCESS=0
 TEST_FAIL=0
 
-DIR="$(dirname "$(realpath "$0")")/subject_example/lispatant"
+DIR="$(dirname "$(realpath "$0")")/subject_example/lispatant/"
 EXEC="$(pwd)/glados"
 
 test() {
