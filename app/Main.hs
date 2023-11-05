@@ -14,7 +14,8 @@ import System.IO
 
 import Parsing (parsingToInstruct)
 import Vm (Env, Instructions)
-import ParserStatus (ParserStatus(..))
+import ParserStatus (
+  ParserStatus(..), interpretParserStatus, isParserStatusError)
 
 -- | Function that take a String and print it
 -- | Print the String and exit with an error
@@ -34,10 +35,9 @@ readLines = do
       return (line : rest)
 
 createFile :: (Maybe Instructions, Env, ParserStatus) -> IO ()
-createFile (Nothing, _, ParserStatusOK) = errorExit "No input"
-createFile (Nothing, _, ParserStatusError _ errorMsg line col) =
-  errorExit $ "Error at line " ++ show line ++ ", column "
-  ++ show col ++ ": " ++ show errorMsg
+createFile (Nothing, _, status)
+  | isParserStatusError status = errorExit $ interpretParserStatus status
+  | otherwise                  = errorExit "No input"
 createFile (Just instruct, env, _) =
   withFile "lip.lop" WriteMode $ \handle ->
     hPrint handle instruct >> hPrint handle env
