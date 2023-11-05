@@ -17,14 +17,18 @@ import Vm (Instructions, Env, exec)
 main :: IO ()
 main = do
     fileContents <- readFile "lip.lop"
-    let linesList = lines fileContents
-    case linesList of
-        (instructionsLine:envLine:_) -> do
+    processFileContents fileContents
+
+processFileContents :: String -> IO ()
+processFileContents fileContents =
+    case lines (fileContents) of
+        (instructionsLine:envLine:_) ->
             let instructions = read instructionsLine :: Instructions
-            let env = read envLine :: Env
-            let result = exec [] env instructions []
-            case result of
-                Right val -> print val
-                Left err -> putStrLn $ "Error: " ++ err
+                env = read envLine :: Env
+            in executeInstructions env instructions
         _ -> putStrLn "Error: The file does not contain enough lines"
 
+executeInstructions :: Env -> Instructions -> IO ()
+executeInstructions env instructions = case exec [] env instructions [] of
+    Right val -> print val
+    Left err -> putStrLn $ "Error: " ++ err

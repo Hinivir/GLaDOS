@@ -123,8 +123,8 @@ exec args env (PushEnv str:xs) stack =
         Left err -> Left err
 --    exec args env xs (z:stack)
 exec args env (PushArg y:ys) stack
-  | null args = Left "Error: cannot push argument (empty)"
-  | otherwise = exec args env ys ((args !! y):stack)
+    | null args = Left "Error: cannot push argument (empty)"
+    | otherwise = exec args env ys ((args !! y):stack)
 exec args env (Push x:xs) stack = exec args env xs (x:stack)
 -------------------------------------------
 exec args env (Call:xs) (Func f:stack) = do
