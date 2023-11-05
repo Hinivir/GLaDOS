@@ -13,7 +13,7 @@ import System.Exit
 import System.IO
 
 import Parsing (parsingToInstruct)
-import Vm (exec, Value(..))
+import Vm (Env, Instructions)
 import ParserStatus (ParserStatus(..))
 
 -- | Function that take a String and print it
@@ -33,19 +33,14 @@ readLines = do
       rest <- readLines
       return (line : rest)
 
--- | Function that take a Maybe [LData] and a ParserStatus
--- | Print the result of the parsing
-printResult:: Either String Value -> IO ()
-printResult (Left msg) = errorExit msg
-printResult (Right x) = print x
-
-compil :: [String] -> IO ()
-compil str = case parsingToInstruct str of
-        (Nothing, _, ParserStatusOK) -> errorExit "No input"
-        (Nothing, _, ParserStatusError _ errorMsg line col) ->
-          errorExit $ "Error at line " ++ show line ++ ", column "
-          ++ show col ++ ": " ++ show errorMsg
-        (Just instruct, env, _) -> printResult (exec [] env instruct [])
+createFile :: (Maybe Instructions, Env, ParserStatus) -> IO ()
+createFile (Nothing, _, ParserStatusOK) = errorExit "No input"
+createFile (Nothing, _, ParserStatusError _ errorMsg line col) =
+  errorExit $ "Error at line " ++ show line ++ ", column "
+  ++ show col ++ ": " ++ show errorMsg
+createFile (Just instruct, env, _) =
+  withFile "lip.lop" WriteMode $ \handle ->
+    hPrint handle instruct >> hPrint handle env
 
 -- | The main function
 -- | Read the lines, parse them and print the result
@@ -56,4 +51,4 @@ main = do
     then errorExit "No input"
     else do
       linesTable <- readLines
-      compil linesTable
+      createFile (parsingToInstruct linesTable)

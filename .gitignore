@@ -10,12 +10,36 @@
 
 # Other file or folder to ignore
 glados
+Vm-exe
 private*
 stack.yaml.lock
 lambdananas
+lip.lop
 
 
 # useless file haskell
 *.hi
 *.o
 GLaDOS.cabal
+
+# By document type
+*~
+*.txt
+
+
+# Specific folder to ignore
+Vm/.stack-work/
+Vm/.vscode
+
+
+# Other file or folder to ignore
+Vm/glados
+Vm/private*
+Vm/stack.yaml.lock
+Vm/lambdananas
+
+
+# useless file haskell
+Vm/*.hi
+Vm/*.o
+Vm/Vm.cabal
