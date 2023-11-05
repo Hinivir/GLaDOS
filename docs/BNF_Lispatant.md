@@ -12,34 +12,30 @@ As an example, you can find the BNF of C [here](https://cs.wmich.edu/~gupta/teac
 <assignment-operator> ::= "+" 
                         | "-" 
                         | "*" 
-                        | "/" 
+                        | "div"
+                        | "mod" 
                         | "==" 
-                        | "!=" 
                         | "<" 
                         | ">" 
                         | "<=" 
                         | ">="
+                        | "!=" 
 
 <block> ::= <instruction>* "Lipdo" <identifier> ":"
 
 <condition> ::= <identifier> <comparison-operator> <literal>
 
-<digit> ::= "0"-"9" #???
+<digit> ::= "0"-"9"
 
-<integer> ::= (0-9)+ #???
+<integer> ::= "0"-"9"
 
-<identifier> ::= (<letter> 
-                | "_") (<letter> 
-                | <digit> 
-                | "_")*
-
-<letter> ::= "a"-"z" 
-            | "A"-"Z"
+<number> ::= <integer>
 
 <letter_digit> ::= <letter> 
                 | <digit>
 
-<number> ::= <integer>
+<letter> ::= "a"-"z" 
+            | "A"-"Z"
 
 <value> ::= <number>
               | "True"
@@ -58,19 +54,17 @@ As an example, you can find the BNF of C [here](https://cs.wmich.edu/~gupta/teac
 <if-statement> ::= "if" <condition> <expression> ("else" <expression>)?
 
 <instruction> ::= "Lipdo" <identifier> ":" <block>
-              | "Lipbe" <identifier> ":" <expression>
 
 <literal> ::= <integer> 
             | <string> 
             | <identifier>
 
-<newline> ::= '\'
+<newline> ::= '|'
+            | ';'
 
 <parameter-list> ::= <identifier> (<identifier>)*
 
 <program> ::= (<expression>)*
 
-//<type-specifier> ::= char
-//                   | int
-//                   | str
+<type-specifier> ::= "Lipbe"
 ```
