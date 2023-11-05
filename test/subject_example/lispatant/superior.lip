@@ -1,0 +1,10 @@
+Lipdo sup a b:
+    if (a == b)
+        False
+    if (a < b)
+        False
+    else
+        True
+
+Lipdo main:
+    sup 10 -2

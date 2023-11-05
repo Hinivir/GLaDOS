@@ -1,0 +1,4 @@
+Lipdo add a b:
+    a + b
+Lipdo main:
+    add 3 4
