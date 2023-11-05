@@ -1,10 +1,8 @@
 Lipdo sup a b:
-    if (a == b)
-        False
-    if (a < b)
-        False
-    else
+    if (a > b)
         True
+    else
+        False
 
 Lipdo main:
     sup 10 -2
