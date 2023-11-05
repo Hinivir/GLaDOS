@@ -1,0 +1,2 @@
+[Push (Number 2),Push (Number 3),Push (Op Mul),Call,Push (Number 10),Push (Number 2),Push (Op Div),Call,Push (Op Add),Call,Ret,Ret]
+[]
