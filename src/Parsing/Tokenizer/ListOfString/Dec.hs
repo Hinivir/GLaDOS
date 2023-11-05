@@ -26,12 +26,11 @@ import Parsing.Tokenizer.Status (
   listOperators,
   listNumDigits,
   shiftedTokenizerIn,
-  signTokenized,
-  tokenize
+  signTokenized
   )
 
 import Parsing.Tokenizer (
-  TokenizedAny(TokenizedFloat, TokenizedLine)
+  TokenizedAny(TokenizedFloat)
   )
 
 --

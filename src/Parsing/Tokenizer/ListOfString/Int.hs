@@ -134,23 +134,23 @@ tokenizeIntSeg input c
 
 --
 tokenizeIntEndOperator :: TokenizerOut -> TokenizerOut
-tokenizeIntEndOperator (x1, input1, status1) =
+tokenizeIntEndOperator (x1, input1, _) =
   case input1 `tokenize` tokenizeOperator of
     (x2, input2, status2) -> (TokenizedLine [x1, x2], input2, status2)
 
 --
 tokenizeIntEndDecSeg :: TokenizerIn -> TokenizerOut -> TokenizerOut
-tokenizeIntEndDecSeg input (TokenizedInt 0 co1, input1, status1) =
+tokenizeIntEndDecSeg input (TokenizedInt 0 co1, input1, _) =
   case (shiftedTokenizerIn input1) `tokenize` tokenizeDec of
-    (TokenizedFloat x2 co2, input2, status2)
+    (TokenizedFloat x2 _, input2, status2)
       | (headTokenizerIn input) == '-'  -> (TokenizedFloat
         (0 - x2) co1, input2, status2)
       | otherwise                       -> (TokenizedFloat
         x2 co1, input2, status2)
     (x2, input2, status2)                     -> (x2, input2, status2)
-tokenizeIntEndDecSeg input (TokenizedInt x1 co1, input1, status1) =
+tokenizeIntEndDecSeg input (TokenizedInt x1 co1, input1, _) =
   case (shiftedTokenizerIn input1) `tokenize` tokenizeDec of
-    (TokenizedFloat x2 co2, input2, status2)
+    (TokenizedFloat x2 _, input2, status2)
       | (headTokenizerIn input) == '-'  -> (TokenizedFloat
         ((fromIntegral x1 :: Float) + (0 - x2)) co1, input2, status2)
       | otherwise                       -> (TokenizedFloat
