@@ -29,7 +29,7 @@ import Vm (
   )
 
 import Parsing.Instruct.LDataToInstruct (
-  convertLDataToInstruct
+  convertLDataToInstruct, moveBy, detectPushEnvCall,
   )
 
 import Parsing.LDataTree.TreeToLData (
@@ -89,4 +89,6 @@ parsingToInstruct input = case parsingToLDataTree input of
 parsingToInstruct2 :: [LData] -> (Maybe Instructions, Env, ParserStatus)
 parsingToInstruct2 input = case convertLDataToInstruct input [] [] of
         (Nothing, _, status')      -> (Nothing, [], status')
-        (Just x', env, status')     -> (Just (x' ++ [Ret]), env, status')
+        --(Just x', env, status')     -> (Just (x' ++ [Ret]), env, status')
+        (Just inst, env, status') -> case detectPushEnvCall inst 0 env of
+            (x, _, nb) -> (Just(moveBy inst x (nb + 1) ++ [Ret]), env, status')

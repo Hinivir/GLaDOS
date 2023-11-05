@@ -4,7 +4,7 @@ TEST_NBR=0
 TEST_SUCESS=0
 TEST_FAIL=0
 
-DIR="$(dirname "$(realpath "$0")")/subject_example/"
+DIR="$(dirname "$(realpath "$0")")/subject_example/lispatant"
 EXEC="$(pwd)/glados"
 
 test() {
@@ -22,39 +22,33 @@ test() {
 
 }
 
-test "foo.scm" "42" "foo"
-test "error.scm" "" "error var"
+test "foo.lip" "42" "foo"
+test "error.lip" "" "error var"
 
 echo -e ""
 
-test "call.scm" "5" "call"
+test "call.lip" "5" "call"
 
 echo -e ""
 
-test "lambda1.scm" "#<procedure>" "lambda 1"
-test "lambda2.scm" "3" "lambda 2"
-test "lambda3.scm" "7" "lambda 3"
+test "function1.lip" "7" "function 1"
 
 echo -e ""
 
-test "function1.scm" "7" "function 1"
+test "if1.lip" "1" "if 1"
+test "if2.lip" "2" "if 2"
+test "if3.lip" "21" "if 3"
 
 echo -e ""
 
-test "if1.scm" "1" "if 1"
-test "if2.scm" "2" "if 2"
-test "if3.scm" "21" "if 3"
+test "builtins1.lip" "11" "builtins 1"
+test "builtins2.lip" "True" "builtins 2"
+test "builtins3.lip" "False" "builtins 3"
 
 echo -e ""
 
-test "builtins1.scm" "11" "builtins 1"
-test "builtins2.scm" "#t" "builtins 2"
-test "builtins3.scm" "#f" "builtins 3"
-
-echo -e ""
-
-test "superior.scm" "#t" "superior"
-test "factorial.scm" "3628800" "factorial"
+test "superior.lip" "True" "superior"
+test "factorial.lip" "3628800" "factorial"
 
 echo -e ""
 

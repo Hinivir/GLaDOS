@@ -85,10 +85,10 @@ testExec =
         ~: exec [] [] [Push (Number 1), Jump 2, Push (Number 2), Call, Ret] []
         ~?= Right (Number 1),
       "Test Factorial"
-        ~: exec [] [("Fact", Func [Push (Number 0), Ret])] [PushEnv "Fact", Call, Ret] []
+        ~: exec [] [("Fact", Func [Push (Number 0), Ret] 0)] [PushEnv "Fact", Call, Ret] []
         ~?= Right (Number 0),
       "Test Factorial 2"
-        ~: exec [] [("Fact", Func [Push (Number 2), Ret])] [PushEnv "Fact", Call, Ret] []
+        ~: exec [] [("Fact", Func [Push (Number 2), Ret] 0)] [PushEnv "Fact", Call, Ret] []
         ~?= Right (Number 2),
       "Test exec with valid environment variable"
         ~: exec [] [("val", Number 1)] [PushEnv "val", Ret] []
@@ -97,6 +97,6 @@ testExec =
         ~: exec [] [("valu", Number 1)] [PushEnv "val", Ret] []
         ~?= Left "Error: unknown variable or function in env: val",
       "Test exec with function call from environment variable"
-        ~: exec [] [("func", Func [Push (Number 0), Ret])] [PushEnv "func", Call, Ret] []
+        ~: exec [] [("func", Func [Push (Number 0), Ret] 0)] [PushEnv "func", Call, Ret] []
         ~?= Right (Number 0)
     ]
