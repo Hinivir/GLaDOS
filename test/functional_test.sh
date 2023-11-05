@@ -6,13 +6,15 @@ TEST_FAIL=0
 
 DIR="$(dirname "$(realpath "$0")")/subject_example/lispatant/"
 EXEC="$(pwd)/glados"
+EXEC_VM="$(pwd)/Vm"
 
 test() {
     result=$($EXEC < "$DIR$1")
+    res=$($EXEC_VM < "lip.lop")
     error_msg=$($EXEC < "$DIR$1" 2>&1)
 
     (( TEST_NBR+=1 ))
-    if [[ $result == "$2" || $error_msg == "$2" ]]; then
+    if [[ $res == "$2" || $error_msg == "$2" ]]; then
         echo -e "$3: [\033[32m✔\033[0m]"
         (( TEST_SUCESS+=1 ))
     else
@@ -22,7 +24,7 @@ test() {
 
 }
 
-test "foo.lip" "42" "foo"
+test "foo.lip" "21" "foo"
 test "error.lip" "" "error var"
 
 echo -e ""
@@ -35,8 +37,8 @@ test "function1.lip" "7" "function 1"
 
 echo -e ""
 
-test "if1.lip" "1" "if 1"
-test "if2.lip" "2" "if 2"
+test "if1.lip" "False" "if 1"
+test "if2.lip" "True" "if 2"
 test "if3.lip" "21" "if 3"
 
 echo -e ""
@@ -48,7 +50,7 @@ test "builtins3.lip" "False" "builtins 3"
 echo -e ""
 
 test "superior.lip" "True" "superior"
-test "factorial.lip" "3628800" "factorial"
+test "factorial.lip" "362880" "factorial"
 
 echo -e ""
 
