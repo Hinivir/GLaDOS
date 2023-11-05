@@ -13,7 +13,7 @@ import System.Exit
 import System.IO
 
 import Parsing (parsingToInstruct)
-import Vm (exec, Value(..))
+import Vm (exec, Value(..), Env, Instructions)
 import ParserStatus (ParserStatus(..))
 
 -- | Function that take a String and print it

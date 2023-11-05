@@ -25,6 +25,7 @@ fclean: clean
 	$(RM) -fr $(NAME)
 	$(STACK) purge
 	$(RM) -fr docs/haddock
+	$(RM) -fr lip.lop
 	cd Vm && $(MAKE) -f Makefile fclean
 
 

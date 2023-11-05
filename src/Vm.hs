@@ -33,7 +33,7 @@ data Value = Number Int
             | List [Value]
             | String String
             | Func Instructions Int
-            deriving (Show, Eq)
+            deriving (Read, Show, Eq)
 
 data Builtin = Head
             | Tail
@@ -66,7 +66,6 @@ type Args = [Value]
 type Stack = [Value]
 type Instructions = [Instruction]
 type Env = [(String, Value)]
-
 
 resInt :: Either String Value -> Int
 resInt (Right (Number x)) = x
