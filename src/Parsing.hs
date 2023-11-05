@@ -28,6 +28,11 @@ import Vm (
   Instruction(..)
   )
 
+--import Parsing.Instruct (
+--  Instructions,
+--  Env
+--  )
+
 import Parsing.Instruct.LDataToInstruct (
   convertLDataToInstruct, moveBy, detectPushEnvCall,
   )
