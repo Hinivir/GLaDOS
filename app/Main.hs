@@ -15,7 +15,6 @@ import System.IO
 import Parsing (parsingToInstruct)
 import Vm (exec, Value(..))
 import ParserStatus (ParserStatus(..))
-import Vm (Instructions, Env)
 
 -- | Function that take a String and print it
 -- | Print the String and exit with an error
