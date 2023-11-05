@@ -10,6 +10,7 @@
 
 # Other file or folder to ignore
 glados
+Vm-exe
 private*
 stack.yaml.lock
 lambdananas

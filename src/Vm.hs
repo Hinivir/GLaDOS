@@ -51,7 +51,7 @@ data Operation = Add
                 | Greater
                 | GreaterEq
                 | Diff
-                deriving (Show, Eq)
+                deriving (Read, Show, Eq)
 
 data Instruction = Push Value
                 | PushArg Int
