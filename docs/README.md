@@ -3,9 +3,9 @@
 The repository for the GLaDOS project.  
   
 <div id="Illustration_Haskell" style="display: flex;">  
-  <img src="assets/Epitech_logo.png" alt="logo Epitech" width="120" height="120" style="margin-right: 50px;">  
-  <img src="assets/Haskell_logo.webp" alt="logo Haskell" width="120" height="120" style="margin-right: 50px;">  
-  <img src="assets/GLaDOS_logo.webp" alt="logo Haskell" width="120" height="120" style="margin-right: 50px;">  
+  <img src="../assets/Epitech_logo.png" alt="logo Epitech" width="120" height="120" style="margin-right: 50px;">  
+  <img src="../assets/Haskell_logo.webp" alt="logo Haskell" width="120" height="120" style="margin-right: 50px;">  
+  <img src="../assets/GLaDOS_logo.webp" alt="logo Haskell" width="120" height="120" style="margin-right: 50px;">  
 </div>  
   
 ---  
@@ -16,6 +16,7 @@ The repository for the GLaDOS project.
 [1. The purpose of the project](#titre1)<br />
 [A) The subjects of the project 📄](#titre11)<br />
 [B) Rules for conventional commit messages 📄](#titre12)<br />
+[C) Backus-Naur Form of Lispatant 📄](#titre13)<br />
 
 [2. How to use GLaDOS](#titre2)<br />
 
@@ -35,11 +36,18 @@ We have to implement a compiler for this language, and a virtual machine to run 
   
 2 [Bootstrap - My parsing library from the ground up](https://intra.epitech.eu/module/2023/B-FUN-500/PAR-5-1/acti-610935/project/file/B-FUN-500_GLaDOS_bootstrap2.pdf)  
 
-3 [GLaDOS - Generic Language and Data Operand Syntax](https://intra.epitech.eu/module/2023/B-FUN-500/PAR-5-1/acti-610933/project/file/B-FUN-500_GLaDOS.pdf)  
+3 [Bootstrap - It’s tortoises all the way down...](https://intra.epitech.eu/module/2023/B-FUN-500/PAR-5-1/acti-610938/project/file/B-FUN-500_GLaDOS_bootstrap3.pdf)  
 
-### <a id="titre11"></a>B) Rules for conventional commit messages 📄
+4 [GLaDOS - Generic Language and Data Operand Syntax](https://intra.epitech.eu/module/2023/B-FUN-500/PAR-5-1/acti-610933/project/file/B-FUN-500_GLaDOS.pdf)  
 
-[The document rules for conventional commit messages](docs/COMMITS.md)
+### <a id="titre12"></a>B) Rules for conventional commit messages 📄
+
+[The document rules for conventional commit messages](COMMITS.md)
+
+
+### <a id="titre13"></a>C) Backus-Naur Form of Lispatant 📄
+
+[The document for Backus-Naur Form of Lispatant](BNF_Lispatant.md)
 
 ---  
   
@@ -68,6 +76,8 @@ make test_run
   
 | [<img src="https://github.com/Drindael.png?size=85" width=85><br><sub>Cyprien Nguyen-Van-Vien</sub>](https://github.com/Drindael) | [<img src="https://github.com/damienBC.png?size=85" width=85><br><sub>Damien Benais-Captal</sub>](https://github.com/damienBC) | [<img src="https://github.com/Pierrelouisleroy.png?size=85" width=85><br><sub>Pierre-Louis Leroy</sub>](https://github.com/Pierrelouisleroy) | [<img src="https://github.com/Hinivir.png?size=85" width=85><br><sub>Viktor Bruggeman</sub>](https://github.com/Hinivir) | [<img src="https://github.com/Lipatant.png?size=85" width=85><br><sub>Virgile Berrier</sub>](https://github.com/Lipatant)  
 | :--: | :--: | :--: | :--: | :--: |  
+
+  
   
 cyprien.nguyen-van-vien@epitech.eu  
 damien.benais-captal@epitech.eu  
