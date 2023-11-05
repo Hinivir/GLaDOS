@@ -13,8 +13,8 @@ import System.Exit
 import System.IO
 
 import Parsing (parsingToInstruct)
+import Vm (exec, Value(..))
 import ParserStatus (ParserStatus(..))
-import Vm (Instructions, Env)
 
 -- | Function that take a String and print it
 -- | Print the String and exit with an error
@@ -35,12 +35,17 @@ readLines = do
 
 -- | Function that take a Maybe [LData] and a ParserStatus
 -- | Print the result of the parsing
-printResult:: (Maybe Instructions, Env, ParserStatus) -> IO ()
-printResult (Nothing, _, ParserStatusOK) = errorExit "No input"
-printResult (Nothing, _, ParserStatusError _ errorMsg line col) =
-  errorExit $ "Error at line " ++ show line ++ ", column "
-  ++ show col ++ ": " ++ show errorMsg
-printResult (Just instruct, env, _) = print instruct >> print env
+printResult:: Either String Value -> IO ()
+printResult (Left msg) = errorExit msg
+printResult (Right x) = print x
+
+compil :: [String] -> IO ()
+compil str = case parsingToInstruct str of
+        (Nothing, _, ParserStatusOK) -> errorExit "No input"
+        (Nothing, _, ParserStatusError _ errorMsg line col) ->
+          errorExit $ "Error at line " ++ show line ++ ", column "
+          ++ show col ++ ": " ++ show errorMsg
+        (Just instruct, env, _) -> printResult (exec [] env instruct [])
 
 createFile :: (Maybe Instructions, Env, ParserStatus) -> IO ()
 createFile (Nothing, _, ParserStatusOK) = errorExit "No input"

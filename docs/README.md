@@ -35,9 +35,7 @@ We have to implement a compiler for this language, and a virtual machine to run 
   
 2 [Bootstrap - My parsing library from the ground up](https://intra.epitech.eu/module/2023/B-FUN-500/PAR-5-1/acti-610935/project/file/B-FUN-500_GLaDOS_bootstrap2.pdf)  
 
-3 [Bootstrap - It’s tortoises all the way down...](https://intra.epitech.eu/module/2023/B-FUN-500/PAR-5-1/acti-610938/project/file/B-FUN-500_GLaDOS_bootstrap3.pdf)  
-
-4 [GLaDOS - Generic Language and Data Operand Syntax](https://intra.epitech.eu/module/2023/B-FUN-500/PAR-5-1/acti-610933/project/file/B-FUN-500_GLaDOS.pdf)  
+3 [GLaDOS - Generic Language and Data Operand Syntax](https://intra.epitech.eu/module/2023/B-FUN-500/PAR-5-1/acti-610933/project/file/B-FUN-500_GLaDOS.pdf)  
 
 ### <a id="titre11"></a>B) Rules for conventional commit messages 📄
 
@@ -70,8 +68,6 @@ make test_run
   
 | [<img src="https://github.com/Drindael.png?size=85" width=85><br><sub>Cyprien Nguyen-Van-Vien</sub>](https://github.com/Drindael) | [<img src="https://github.com/damienBC.png?size=85" width=85><br><sub>Damien Benais-Captal</sub>](https://github.com/damienBC) | [<img src="https://github.com/Pierrelouisleroy.png?size=85" width=85><br><sub>Pierre-Louis Leroy</sub>](https://github.com/Pierrelouisleroy) | [<img src="https://github.com/Hinivir.png?size=85" width=85><br><sub>Viktor Bruggeman</sub>](https://github.com/Hinivir) | [<img src="https://github.com/Lipatant.png?size=85" width=85><br><sub>Virgile Berrier</sub>](https://github.com/Lipatant)  
 | :--: | :--: | :--: | :--: | :--: |  
-
-  
   
 cyprien.nguyen-van-vien@epitech.eu  
 damien.benais-captal@epitech.eu  

@@ -19,9 +19,12 @@ module Parsing.Tokenizer.Status (
   isUniquePair,
   listEmpty,
   listLiteral,
-  listNumSigns,
+  listNumDecimal,
   listNumDigits,
+  listNumSigns,
   listNumStart,
+  listOperators,
+  listOperatorsComb,
   listSymbolsStart,
   listSymbols,
   listUnique,
@@ -29,7 +32,7 @@ module Parsing.Tokenizer.Status (
   listUniquePair,
   listUniquePairEnd,
   listUniquePairStart,
-  listUniqueSnitch,
+  listUniqueHook,
   shiftedTokenizerIn,
   signTokenized,
   tokenize
@@ -98,13 +101,17 @@ createTokenizerOutError input name info = case input of
 
 --
 errorContent :: (TokenizerOut) -> TokenizedAny -> TokenizerOut
-errorContent (_, input, status) content = (content ,input, status)
+errorContent (_, input, status) content = (content, input, status)
 
 -- FUNCTIONS --
 
 --
 tokenize :: TokenizerIn -> Tokenizer -> (TokenizerOut)
 tokenize a f = runTokenizer f a
+
+--
+listNumDecimal :: [Char]
+listNumDecimal = "."
 
 --
 listNumSigns :: [Char]
@@ -116,15 +123,26 @@ listNumDigits = ['0'..'9']
 
 --
 listNumStart :: [Char]
-listNumStart = listNumDigits ++ listNumSigns
+listNumStart = listNumDigits ++ listNumSigns ++ listNumDecimal
+
+--
+listOperatorsComb :: [String]
+listOperatorsComb = [
+  "+", "-", "*", "/", "%",
+  "<", ">", "==", "!=", "<=", ">=", "!="
+  ]
+
+--
+listOperators :: [Char]
+listOperators = "+-*/%<>=!"
 
 --
 listSymbolsStart :: [Char]
-listSymbolsStart = ['a'..'z'] ++ ['A'..'Z'] ++ "+-*/%<>=?!#."
+listSymbolsStart = ['a'..'z'] ++ ['A'..'Z'] ++ "?#."
 
 --
 listSymbols :: [Char]
-listSymbols = listSymbolsStart ++ ['0'..'9']
+listSymbols = listSymbolsStart ++ ['0'..'9'] ++ listOperators
 
 --
 listUniquePairEnd :: [Char]
@@ -142,13 +160,13 @@ listUniquePair = listUniquePairStart ++ listUniquePairEnd
 listUniqueEnd :: [Char]
 listUniqueEnd = "\n|;"
 
--- | Snitches are used to ignore linebreaks (listUniqueEnd)
-listUniqueSnitch :: [Char]
-listUniqueSnitch = "\\"
+-- | Hookes are used to ignore linebreaks (listUniqueEnd)
+listUniqueHook :: [Char]
+listUniqueHook = "\\"
 
 --
 listUnique :: [Char]
-listUnique = listUniquePair ++ listUniqueEnd ++ listUniqueSnitch ++ ",:"
+listUnique = listUniquePair ++ listUniqueEnd ++ listUniqueHook ++ ",:"
 
 --
 listEmpty :: [Char]

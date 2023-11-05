@@ -24,18 +24,16 @@ module Vm
 
 import Data.Either()
 
---list avant, string apres
---head tail :(cons) + autres builtin
-
 data Value = Number Int
-            | Boolean Bool
-            | String String
             | Float Float
+            | Boolean Bool
+            | Char Char
             | Op Operation
             | Builtin Builtin
             | List [Value]
-            | Func Instructions
-            deriving (Read, Show, Eq)
+            | String String
+            | Func Instructions Int
+            deriving (Show, Eq)
 
 data Builtin = Head
             | Tail
@@ -52,7 +50,8 @@ data Operation = Add
                 | LessEq
                 | Greater
                 | GreaterEq
-                deriving (Read, Show, Eq)
+                | Diff
+                deriving (Show, Eq)
 
 data Instruction = Push Value
                 | PushArg Int
@@ -95,18 +94,23 @@ callOp Less (Number x) (Number y) = Right (Boolean(y < x))
 callOp LessEq (Number x) (Number y) = Right (Boolean(y <= x))
 callOp Greater (Number x) (Number y) = Right (Boolean(y > x))
 callOp GreaterEq (Number x) (Number y) = Right (Boolean(y >= x))
+callOp Diff (Number x) (Number y) = Right (Boolean(x /= y))
+callOp Diff (Boolean x) (Boolean y) = Right (Boolean(x /= y))
 callOp _ _ _ = Left "Error: invalid operation"
 
 callBuiltin :: Builtin -> Value -> Either String Value
 callBuiltin Head (List (x:_)) = Right x
+callBuiltin Head (String (x:_)) = Right (Char x)
 callBuiltin Head _ = Left "Error: head of empty list"
 callBuiltin Tail (List (_:xs)) = Right (List xs)
+callBuiltin Tail (String (_:xs)) = Right (String xs)
 callBuiltin Tail _ = Left "Error: tail of empty list"
 callBuiltin Len (List xs) = Right (Number (length xs))
+callBuiltin Len (String xs) = Right (Number (length xs))
 callBuiltin _ _ = Left "Error: invalid builtin"
 
 execFunc :: Args -> Env -> Value -> Stack -> Either String Value
-execFunc args env (Func instr) [] = exec args env instr []
+execFunc args env (Func instr _) [] = exec args env instr []
 execFunc _ _ _ _ = Left "Error: invalid function"
 
 pushFromEnv :: Env -> String -> Either String Value
@@ -127,8 +131,8 @@ exec args env (PushArg y:ys) stack
   | otherwise = exec args env ys ((args !! y):stack)
 exec args env (Push x:xs) stack = exec args env xs (x:stack)
 -------------------------------------------
-exec args env (Call:xs) (Func f:stack) = do
-    z <- execFunc stack env (Func f) []
+exec args env (Call:xs) (Func f nb:stack) = do
+    z <- execFunc stack env (Func f nb) []
     exec args env xs (z:stack)
 exec args env (Call:xs) (Op op:x:y:stack) = do
     z <- callOp op x y
@@ -142,4 +146,4 @@ exec args env (JumpIfFalse n:xs) (Boolean False:ys) =
     exec args env (drop n xs) ys
 exec args env (JumpIfFalse _:xs) (_:stack) = exec args env xs stack
 exec args env (Jump n:xs) stack = exec args env (drop n xs) stack
-exec _ _ _ x = Left ("Invalid instruction " ++ show x)
+exec _ _ _ _ = Left ("Invalid instruction")
