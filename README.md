@@ -59,7 +59,8 @@ And then, run the following commands:
   
 ```bash  
 make  
-./glados < [file]  
+./glados < [file.lip]  
+./Vm < lip.lop  
 ```  
   
 To check that the program is running correctly, you can use this command to **run tests**:  
