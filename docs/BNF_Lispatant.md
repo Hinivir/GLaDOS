@@ -64,6 +64,8 @@ As an example, you can find the BNF of C [here](https://cs.wmich.edu/~gupta/teac
             | <string> 
             | <identifier>
 
+<newline> ::= '\'
+
 <parameter-list> ::= <identifier> (<identifier>)*
 
 <program> ::= (<expression>)*
