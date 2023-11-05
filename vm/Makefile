@@ -5,7 +5,7 @@
 ## Makefile
 ##
 
-NAME = Vm-exe
+NAME = Vm
 
 STACK = stack
 

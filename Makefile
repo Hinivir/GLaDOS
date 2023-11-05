@@ -9,7 +9,7 @@ NAME = glados
 
 STACK = stack
 
-VM_PROJECT_DIR = Vm
+VM_PROJECT_DIR = vm
 
 all: $(NAME)
 	$(MAKE) -C $(VM_PROJECT_DIR) -f Makefile
@@ -19,18 +19,18 @@ $(NAME):
 
 clean:
 	$(STACK) clean
-	cd Vm && $(MAKE) -f Makefile clean
+	cd vm && $(MAKE) -f Makefile clean
 
 fclean: clean
 	$(RM) -fr $(NAME)
 	$(STACK) purge
 	$(RM) -fr docs/haddock
 	$(RM) -fr lip.lop
-	cd Vm && $(MAKE) -f Makefile fclean
+	cd vm && $(MAKE) -f Makefile fclean
 
 
 re: fclean all
-	cd Vm && $(MAKE) -f Makefile re
+	cd vm && $(MAKE) -f Makefile re
 
 test_run:
 	$(STACK) test
