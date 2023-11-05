@@ -9,10 +9,8 @@ NAME = glados
 
 STACK = stack
 
-VM_PROJECT_DIR = vm
-
 all: $(NAME)
-	$(MAKE) -C $(VM_PROJECT_DIR) -f Makefile
+	$(MAKE) -C vm -f Makefile
 
 $(NAME):
 	$(STACK) install
