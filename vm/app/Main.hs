@@ -11,6 +11,7 @@ module Main
 
 import System.Exit ()
 import System.IO ()
+import System.Environment
 
 import Vm (
     Instructions,
@@ -19,10 +20,20 @@ import Vm (
     Value(..),
     )
 
+printHelp :: IO ()
+printHelp = putStrLn "USAGE: ./Vm < file.lop\nDESCRIPTION:\n\t"
+    >> putStrLn "file.lop\tfile with the instruction"
+    >> putStrLn "code give by glados\n\t-h\t"
+    >> putStrLn "\tprint this help and exit"
+
 main :: IO ()
 main = do
-    fileContents <- readFile "lip.lop"
-    processFileContents fileContents
+    args <- getArgs
+    case args of
+        ["-h"] -> printHelp
+        _ -> do
+            fileContents <- readFile "lip.lop"
+            processFileContents fileContents
 
 processFileContents :: String -> IO ()
 processFileContents fileContents =
