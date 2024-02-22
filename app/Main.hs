@@ -11,6 +11,7 @@ module Main
 
 import System.Exit
 import System.IO
+import System.Environment
 
 import Parsing (parsingToInstruct)
 import Vm (Env, Instructions)
@@ -42,13 +43,19 @@ createFile (Just instruct, env, _) =
   withFile "lip.lop" WriteMode $ \handle ->
     hPrint handle instruct >> hPrint handle env
 
+-- | Function to print the help message
+printHelp :: IO ()
+printHelp = putStrLn "USAGE: ./glados < file.lip\nDESCRIPTION:\n\t"
+    >> putStrLn "file.lip\tfile with instructions\n\t-h\t"
+    >> putStrLn "\tprint this help and exit"
+
 -- | The main function
 -- | Read the lines, parse them and print the result
 main :: IO ()
 main = do
-  isEOF' <- isEOF
-  if isEOF'
-    then errorExit "No input"
-    else do
-      linesTable <- readLines
-      createFile (parsingToInstruct linesTable)
+  args <- getArgs
+  case args of
+    ["-h"] -> printHelp
+    _      -> do
+                linesTable <- readLines
+                createFile (parsingToInstruct linesTable)
